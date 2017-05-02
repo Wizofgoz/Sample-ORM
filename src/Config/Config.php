@@ -1,7 +1,8 @@
 <?php
 return [
-	'database' => \SampleORM\Persistance\Drivers\PDO::class,
-	\SampleORM\Persistance\PDO::class => [
+	'database' => \SampleORM\Persistance\Abstraction\Drivers\PDO::class,
+	
+	\SampleORM\Persistance\Connections\PDO::class => [
 		'dsn' => '',
 		'username' => '',
 		'password' => '',

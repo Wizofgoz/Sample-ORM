@@ -18,26 +18,34 @@ class SampleORM
 			case 'config':
 				$class = \SampleORM\Config\ConfigManager::class;
 			case 'database':
-				
+				$class = \SampleORM\Persistance\Persistance::class;
 			default:
 				throw new \Exception('Given slug is not defined');
 		}
-		$dependancies = $this->resolveDependencies($class);
-		
-		return new $class(...$dependancies);
+		return $this->resolveDependencies($class);
 	}
 	
 	protected function resolveDependencies($class)
 	{
 		$dependencies = [];
-		foreach($this->definitions as $definition => $dependency)
+		foreach($this->definitions[$class] as $definition => $dependency)
 		{
-			
+			if(!empty($dependency))
+			{
+				foreach($dependency as $item)
+				{
+					$dependencies = array_merge($dependencies, $this->resolveDependencies($item));
+				}
+				
+				continue;
+			}
 		}
-	}
-	
-	protected function resolveDependency($class)
-	{
+		if(isset($this->definitions[$class]['static']))
+		{
+			$method = $this->definitions[$class]['static'];
+			return $class::$method(...$dependencies);
+		}
 		
+		return new $class(...$dependencies);
 	}
 }

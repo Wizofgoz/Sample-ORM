@@ -4,7 +4,7 @@
 *
 *
 */
-namespace SampleORM\Persistance\Drivers;
+namespace SampleORM\Persistance\Abstraction\Drivers;
 use SampleORM\Persistance\Abstraction\Query;
 
 class PDODriver implements DriverInterface
@@ -12,7 +12,7 @@ class PDODriver implements DriverInterface
 	
 	protected $connection;
 	
-	public function __construct(\SampleORM\Persistance\PDO $connection)
+	public function __construct(\SampleORM\Persistance\Connections\PDO $connection)
 	{
 		$this->connection = $connection;
 	}
