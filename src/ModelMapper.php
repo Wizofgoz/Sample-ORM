@@ -1,6 +1,6 @@
 <?php
 namespace SampleORM;
-use \SampleORM\Persistance\DriverInterface;
+use \SampleORM\Persistence\Abstraction\Drivers\DriverInterface;
 use \SampleORM\Models\Base;
 
 class ModelMapper

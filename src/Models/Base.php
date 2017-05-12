@@ -18,7 +18,7 @@ class Base
 	
 	protected $properties = [];
 	
-	private $persistance;
+	private $persistence;
 	
 	public function findById(int $id)
 	{

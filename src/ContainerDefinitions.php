@@ -14,7 +14,10 @@ return [
 	],
 	
 	//	Persistance entry point
-	\SampleORM\Persistance\Persistance::class => [],
+	\SampleORM\Persistance\Persistance::class => [
+		\SampleORM\Persistance\Abstraction\Drivers\PDO::class,
+		\SampleORM\Persistance\Abstraction\Query::class
+	],
 	
 	//	Query Builder for database abstraction
 	\SampleORM\Persistance\Abstraction\Query::class => [],

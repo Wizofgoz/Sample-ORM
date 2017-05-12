@@ -1,5 +1,5 @@
 <?php
-namespace SampleORM\Persistance;
+namespace SampleORM\Persistence\Abstraction\Drivers;
 interface DriverInterface
 {
 	public function persist(\SampleORM\Models\Base $model);

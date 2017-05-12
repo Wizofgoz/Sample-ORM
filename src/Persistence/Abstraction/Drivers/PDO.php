@@ -4,8 +4,9 @@
 *
 *
 */
-namespace SampleORM\Persistance\Abstraction\Drivers;
-use SampleORM\Persistance\Abstraction\Query;
+namespace SampleORM\Persistence\Abstraction\Drivers;
+use SampleORM\Persistence\Abstraction\Query;
+use SampleORM\Collection\Collection;
 
 class PDODriver implements DriverInterface
 {
@@ -159,7 +160,7 @@ class PDODriver implements DriverInterface
 			$sql = "SELECT ".$Fields." FROM ".$query->getTable().$Joins.$Wheres['placeholders'].$Orders.$Groups.$Having['placeholders'].$Limit;
 			$stmt = $this->connection->prepare($sql);
 			$stmt->execute($data);
-			return $stmt->fetchAll();
+			return Collection::collect($stmt->fetchAll());
 		}
 		else
 		{

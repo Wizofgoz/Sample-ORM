@@ -17,20 +17,31 @@ class SampleORM
 		{
 			case 'config':
 				$class = \SampleORM\Config\ConfigManager::class;
-			case 'database':
-				$class = \SampleORM\Persistance\Persistance::class;
+			case 'persistence':
+				$class = \SampleORM\Persistence\Persistence::class;
+			case 'query':
+				$class = \SampleORM\Persistence\Abstraction\Query::class;
+			case 'collection':
+				$class = \SampleORM\Collection\Collection::class;
+			case 'mapper':
+				$class = \SampleORM\ModelMapper::class;
 			default:
 				throw new \Exception('Given slug is not defined');
 		}
-		return $this->resolveDependencies($class);
+		if(!isset($this->booted[$class]))
+		{
+			$this->booted[$class] = $this->resolveDependencies($class);
+		}
+		
+		return $this->booted[$class];
 	}
 	
 	protected function resolveDependencies($class)
 	{
 		$dependencies = [];
-		foreach($this->definitions[$class] as $definition => $dependency)
+		foreach($this->definitions[$class] as $dependency)
 		{
-			if(!empty($dependency))
+			if(!empty($dependency) && $dependency != 'static')
 			{
 				foreach($dependency as $item)
 				{

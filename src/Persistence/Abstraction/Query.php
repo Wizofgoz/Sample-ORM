@@ -1,5 +1,5 @@
 <?php
-namespace SampleORM\Persistance\Abstraction;
+namespace SampleORM\Persistence\Abstraction;
 
 class Query
 {

@@ -14,7 +14,7 @@ class Collection implements \Countable, \ArrayAccess, \Iterator
 	
 	public static function collect(array $array = [])
 	{
-		return new self($array);
+		return new static($array);
 	}
 	
 	public function current()

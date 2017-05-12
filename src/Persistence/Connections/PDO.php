@@ -1,5 +1,5 @@
 <?php
-namespace SampleORM\Persistance\Connections;
+namespace SampleORM\Persistence\Connections;
 use SampleORM\Config\ConfigManager;
 
 class PDO extends PDO
