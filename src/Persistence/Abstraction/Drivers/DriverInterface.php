@@ -1,10 +1,13 @@
 <?php
 namespace SampleORM\Persistence\Abstraction\Drivers;
+use SampleORM\Persistence\Abstraction\Query;
 interface DriverInterface
 {
-	public function persist(\SampleORM\Models\Base $model);
+	public function select(Query $query);
 	
-	public function retrieve($id);
+	public function insert(array $rows, Query $query);
 	
-	public function delete($id);
+	public function update(array $columns, Query $query);
+	
+	public function delete(Query $query);
 }

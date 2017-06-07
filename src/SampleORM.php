@@ -2,15 +2,37 @@
 namespace SampleORM;
 class SampleORM
 {
+	/*
+	*	Array of booted modules
+	*
+	*	@var array
+	*/
 	private $booted = [];
 	
+	/*
+	*	Array of definitions for the container
+	*
+	*	@var array
+	*/
 	private $definitions = [];
 	
+	/*
+	*	Initialize the object
+	*
+	*	@return void
+	*/
 	public function __construct()
 	{
 		$this->definitions = require_once(__DIR__.'/ContainerDefinitions.php');
 	}
 	
+	/*
+	*	Gets the instance of a module
+	*
+	*	@param string $name
+	*
+	*	@return object
+	*/
 	public function __get(string $name)
 	{
 		switch(strtolower($name))
@@ -36,6 +58,13 @@ class SampleORM
 		return $this->booted[$class];
 	}
 	
+	/*
+	*	Resolve dependancies for the class and initialize it
+	*
+	*	@param string $class
+	*
+	*	@return object
+	*/
 	protected function resolveDependencies($class)
 	{
 		$dependencies = [];

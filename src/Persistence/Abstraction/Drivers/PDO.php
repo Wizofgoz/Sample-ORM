@@ -1,27 +1,36 @@
 <?php
-/*
-*
-*
-*
-*/
 namespace SampleORM\Persistence\Abstraction\Drivers;
 use SampleORM\Persistence\Abstraction\Query;
 use SampleORM\Collection\Collection;
+use SampleORM\Persistance\Connections\PDO as Connection;
 
 class PDODriver implements DriverInterface
 {
-	
+	/*
+	*	Connection to the database
+	*
+	*	@var \SampleORM\Persistance\Connections\PDO
+	*/
 	protected $connection;
 	
-	public function __construct(\SampleORM\Persistance\Connections\PDO $connection)
+	/*
+	*	Initialize the object
+	*
+	*	@param \SampleORM\Persistance\Connections\PDO
+	*
+	*	@return void
+	*/
+	public function __construct(Connection $connection)
 	{
 		$this->connection = $connection;
 	}
 	
 	/*
 	*	build query portion concerning table joins
+	*
+	*	@param Query $query
 	*	
-	*	@return string $joins
+	*	@return string
 	*/
 	protected function buildJoins(Query $query)
 	{
@@ -40,8 +49,10 @@ class PDODriver implements DriverInterface
 	
 	/*
 	*	build query portion concerning where clauses
+	*
+	*	@param Query $query
 	*	
-	*	@return array $wheres
+	*	@return array
 	*/
 	protected function buildWheres(Query $query)
 	{
@@ -66,8 +77,10 @@ class PDODriver implements DriverInterface
 	
 	/*
 	*	build query portion concerning requested fields
+	*
+	*	@param Query $query
 	*	
-	*	@return string $fields
+	*	@return string
 	*/
 	protected function buildFields(Query $query)
 	{
@@ -76,8 +89,10 @@ class PDODriver implements DriverInterface
 	
 	/*
 	*	build query portion concerning order by clause
+	*
+	*	@param Query $query
 	*	
-	*	@return string $orders
+	*	@return string
 	*/
 	protected function buildOrders(Query $query)
 	{
@@ -86,8 +101,10 @@ class PDODriver implements DriverInterface
 	
 	/*
 	*	build query portion concerning group by clause
+	*
+	*	@param Query $query
 	*	
-	*	@return string $groups
+	*	@return string
 	*/
 	protected function buildGroups(Query $query)
 	{
@@ -96,8 +113,10 @@ class PDODriver implements DriverInterface
 	
 	/*
 	*	build query portion concerning having clauses
+	*
+	*	@param Query $query
 	*	
-	*	@return array $having
+	*	@return array
 	*/
 	protected function buildHaving(Query $query)
 	{
@@ -121,8 +140,10 @@ class PDODriver implements DriverInterface
 	
 	/*
 	*	build query portion concerning limit clause
+	*
+	*	@param Query $query
 	*	
-	*	@return string $limit
+	*	@return string
 	*/
 	protected function buildLimits(Query $query)
 	{
@@ -130,10 +151,13 @@ class PDODriver implements DriverInterface
 	}
 	
 	/*
-	*	Run the built query against the DB connection
+	*	Run the built query against the DB connection as a select
 	*
-	*	@param	Query	$query
-	*	@return 	array	$rows
+	*	@param Query $query
+	*
+	*	@throws \Exception
+	*
+	*	@return array
 	*/
 	public function select(Query $query)
 	{
@@ -169,11 +193,14 @@ class PDODriver implements DriverInterface
 	}
 	
 	/*
-	*	insert the given rows
+	*	Insert the given rows
 	*
-	*	@param	array	$rows
-	*	@param	Query	$query
-	*	@return 	array	$ids
+	*	@param array $rows
+	*	@param Query $query
+	*
+	*	@throws \Exception
+	*
+	*	@return array
 	*/
 	public function insert(array $rows, Query $query)
 	{
@@ -249,11 +276,14 @@ class PDODriver implements DriverInterface
 	}
 	
 	/*
-	*	update with the given data
+	*	Update with the given data
 	*
-	*	@param	array	$columns
-	*	@param	Query	$query
-	*	@return boolean $success
+	*	@param array $columns
+	*	@param Query $query
+	*
+	*	@throws \Exception
+	*
+	*	@return bool
 	*/
 	public function update(array $columns, Query $query)
 	{
@@ -280,10 +310,13 @@ class PDODriver implements DriverInterface
 	}
 	
 	/*
-	*	delete the given rows
+	*	Delete the given rows
 	*
-	*	@param	Query	$query
-	*	@return boolean $success
+	*	@param Query $query
+	*
+	*	@throws \Exception
+	*
+	*	@return bool
 	*/
 	public function delete(Query $query)
 	{
@@ -309,10 +342,13 @@ class PDODriver implements DriverInterface
 	}
 	
 	/*
-	*	truncate the given table
+	*	Truncate the given table
 	*
-	*	@param	Query	$query
-	*	@return boolean $success
+	*	@param Query $query
+	*
+	*	@throws \Exception
+	*
+	*	@return boolean
 	*/
 	public function truncate(Query $query)
 	{
@@ -332,9 +368,9 @@ class PDODriver implements DriverInterface
 	*	run a raw query against the DB. All applicable user-entered data should be shown as placeholders (?) 
 	*	and actual data should be in $data array in order that they appear in query
 	*
-	*	@param	string	$query
-	*	@param	array	$data
-	*	@return	PDOStatement 	$stmt
+	*	@param string $query
+	*	@param array $data
+	*	@return PDOStatement
 	*/
 	public function raw($query, array $data = [])
 	{

@@ -1,6 +1,5 @@
 <?php
 namespace SampleORM\Persistence;
-
 use \SampleORM\Persistence\Abstraction\Drivers\DriverInterface;
 use \SampleORM\Persistence\Abstraction\Query;
 

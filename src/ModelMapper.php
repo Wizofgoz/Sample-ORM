@@ -1,25 +1,54 @@
 <?php
 namespace SampleORM;
-use \SampleORM\Persistence\Abstraction\Drivers\DriverInterface;
+
+use \SampleORM\Persistance\Persistance;
 use \SampleORM\Models\Base;
 
 class ModelMapper
 {
-	private $adapter;
+	/*
+	*	Database connection
+	*
+	*	@var Persistance $persistance
+	*/
+	private $persistance;
 	
-	public function __construct(DriverInterface $adapter)
+	/*
+	*	Initialize the object
+	*
+	*	@param Persistance $persistance
+	*
+	*	@return void
+	*/
+	public function __construct(Persistance $persistance)
 	{
-		$this->adapter = $adapter;
+		$this->persistance = $persistance;
 	}
 	
-	public function findById(int $id, string $model): Base
+	/*
+	*	Find row in Database by ID and map it to a model
+	*
+	*	@param int $id
+	*	@param string $model
+	*
+	*	@return Base
+	*/
+	public function findById(int $id, string $model)
 	{
 		
 		
 		return $this->mapRowToModel($result, $model);
 	}
 	
-	public function mapRowToModel(array $row, string $model): Base
+	/*
+	*	Map a given row to a model
+	*
+	*	@param array $row
+	*	@param string $model
+	*
+	*	@return Base
+	*/
+	public function mapRowToModel(array $row, string $model)
 	{
 		return $model::fromState($row);
 	}
