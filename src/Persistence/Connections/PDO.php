@@ -2,7 +2,7 @@
 namespace SampleORM\Persistence\Connections;
 use SampleORM\Config\ConfigManager;
 
-class PDO extends PDO
+class PDO extends \PDO
 {
 	public static function fromConfiguration(ConfigManager $config)
 	{
