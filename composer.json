@@ -1,0 +1,21 @@
+{
+	"name": "wizofgoz/sample-orm",
+	"description": "An ORM plugin inspired by Eloquent",
+	"license": "MIT",
+	"require" : {
+		"php": ">=7.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "6.*"
+	},
+	"autoload": {
+		"psr-4": {
+			"SampleORM\\": "src/"
+		}
+	},
+	"autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    }
+}
