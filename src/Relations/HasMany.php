@@ -1,7 +1,6 @@
 <?php
 namespace SampleORM\Relations;
 
-class HasMany
+class HasMany extends Relation
 {
-	
 }

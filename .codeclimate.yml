@@ -13,6 +13,8 @@ engines:
         enabled: true
     phpcodesniffer:
         enabled: true
+        config:
+            standard: "PSR1,PSR2"
 ratings:
     paths:
     - "**.inc"

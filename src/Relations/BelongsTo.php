@@ -1,7 +1,6 @@
 <?php
 namespace SampleORM\Relations;
 
-class BelongsTo
+class BelongsTo extends Relation
 {
-	
 }

@@ -20,14 +20,12 @@ class Base
 	
 	private $persistence;
 	
-	public function findById(int $id)
+	public static function findById(int $id)
 	{
-		
 	}
 	
 	public function save()
 	{
-		
 	}
 	
 	public function __set(string $name, $value)
@@ -37,9 +35,8 @@ class Base
 	
 	public function __get(string $name)
 	{
-		if(!isset($this->properties[$name]))
-		{
-			return NULL;
+		if(!isset($this->properties[$name])) {
+			return null;
 		}
 		
 		return $this->properties[$name];

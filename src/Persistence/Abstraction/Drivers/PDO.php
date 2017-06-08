@@ -1,5 +1,6 @@
 <?php
 namespace SampleORM\Persistence\Abstraction\Drivers;
+
 use SampleORM\Persistence\Abstraction\Query;
 use SampleORM\Collection\Collection;
 use SampleORM\Persistance\Connections\PDO as Connection;
@@ -35,13 +36,11 @@ class PDODriver implements DriverInterface
 	protected function buildJoins(Query $query)
 	{
 		$joins = '';
-		$query_joins = $query->getJoins();
-		if(count($query_joins) > 0)
-		{
-			$tables = array_keys($query_joins);
-			for($i=0; $i < count($tables); $i++)
-			{
-				$joins .= ' JOIN '.$tables[$i].' ON '.$query_joins[$tables[$i]][0].(count($query_joins[$tables[$i]]) > 1 ? ' AND ' : '').implode(' AND ', array_slice($query_joins[$tables[$i]], 1));
+		$queryJoins = $query->getJoins();
+		if(count($queryJoins) > 0) {
+			$tables = array_keys($queryJoins);
+			for ($i = 0; $i < count($tables); $i++) {
+				$joins .= ' JOIN '.$tables[$i].' ON '.$queryJoins[$tables[$i]][0].(count($queryJoins[$tables[$i]]) > 1 ? ' AND ' : '').implode(' AND ', array_slice($queryJoins[$tables[$i]], 1));
 			}
 		}
 		return $joins;
@@ -58,19 +57,17 @@ class PDODriver implements DriverInterface
 	{
 		$wheres = '';
 		$data = [];
-		$wheresarr = $query->getWheres();
-		foreach(end($wheresarr) as $key => $value)
-		{
+		$wheresArr = $query->getWheres();
+		foreach (end($wheresArr) as $key => $value) {
 			//	add where on first loop only, AND on all others
 			$wheres .= ($wheres == '' ? ' WHERE ' : ' AND ').$key;
 			if(is_array($value))
 			{
 				$data = array_merge($data, $value);
+				continue;
 			}
-			else
-			{
-				$data[] = $value;
-			}
+			
+			$data[] = $value;
 		}
 		return ['placeholders' => $wheres, 'data' => $data];
 	}
@@ -122,18 +119,16 @@ class PDODriver implements DriverInterface
 	{
 		$having = '';
 		$data = [];
-		foreach($query->getHaving() as $key => $value)
-		{
+		foreach ($query->getHaving() as $key => $value) {
 			//	add where on first loop only, AND on all others
-			$wheres .= ($wheres == '' ? ' HAVING ' : ' AND ').$key;
+			$having .= ($having == '' ? ' HAVING ' : ' AND ').$key;
 			if(is_array($value))
 			{
 				$data = array_merge($data, $value);
+				continue;
 			}
-			else
-			{
-				$data[] = $value;
-			}
+			
+			$data[] = $value;
 		}
 		return ['placeholders' => $having, 'data' => $data];
 	}
@@ -161,35 +156,32 @@ class PDODriver implements DriverInterface
 	*/
 	public function select(Query $query)
 	{
-		if($query->getTable() != '')
-		{
+		if($query->getTable() != '') {
 			$data = [];
 			//	no prepared allowed
-			$Fields = $this->buildFields($query);
+			$fields = $this->buildFields($query);
 			//	prepared allowed
-			$Joins = $this->buildJoins($query);
+			$joins = $this->buildJoins($query);
 			//$data += $Joins['data'];
 			//	prepared allowed
-			$Wheres = $this->buildWheres($query);
-			$data = array_merge($data, $Wheres['data']);
+			$wheres = $this->buildWheres($query);
+			$data = array_merge($data, $wheres['data']);
 			//	no prepared allowed
-			$Orders = $this->buildOrders($query);
+			$orders = $this->buildOrders($query);
 			//	no prepared allowed
-			$Groups = $this->buildGroups($query);
+			$groups = $this->buildGroups($query);
 			//	prepared allowed
-			$Having = $this->buildHaving($query);
-			$data = array_merge($data, $Having['data']);
+			$having = $this->buildHaving($query);
+			$data = array_merge($data, $having['data']);
 			//	no prepared allowed
-			$Limit = $this->buildLimits($query);
-			$sql = "SELECT ".$Fields." FROM ".$query->getTable().$Joins.$Wheres['placeholders'].$Orders.$Groups.$Having['placeholders'].$Limit;
+			$limit = $this->buildLimits($query);
+			$sql = "SELECT ".$fields." FROM ".$query->getTable().$joins.$wheres['placeholders'].$orders.$groups.$having['placeholders'].$limit;
 			$stmt = $this->connection->prepare($sql);
 			$stmt->execute($data);
-			return Collection::collect($stmt->fetchAll());
+			return new Collection($stmt->fetchAll());
 		}
-		else
-		{
-			throw new \Exception('A table must be selected first');
-		}
+		
+		throw new \Exception('A table must be selected first');
 	}
 	
 	/*
@@ -204,75 +196,63 @@ class PDODriver implements DriverInterface
 	*/
 	public function insert(array $rows, Query $query)
 	{
-		if($query->getTable() != '')
-		{
+		if($query->getTable() != '') {
 			$columns = [];
 			$data = [];
 			//	cycle through all new rows
-			for($i=0; $i < count($rows); $i++)
-			{
-				if(is_array($rows[$i]))
-				{
+			for ($i = 0; $i < count($rows); $i++) {
+				if(is_array($rows[$i])) {
 					//	get array keys as column names on first round
-					if(empty($columns))
-					{
+					if(empty($columns)) {
 						$columns = array_keys($rows[$i]);
 					}
 					//	get array datas as values
 					$count = 0;
-					foreach($columns as $column)
-					{
+					foreach ($columns as $column) {
 						$data[$i][] = $rows[$i][$column];
 						$count++;
 					}
+					
+					continue;
 				}
-				else
-				{
-					throw new \Exception('Expected an array for each row');
-				}
+				
+				throw new \Exception('Expected an array for each row');
 			}
 			$placeholders = "";
-			for($i=0; $i < count($columns); $i++)
-			{
+			for ($i = 0; $i < count($columns); $i++) {
 				if($placeholders == "")
 				{
 					$placeholders .= '?';
+					continue;
 				}
-				else
-				{
-					$placeholders .= ', ?';
-				}
+				
+				$placeholders .= ', ?';
 			}
 			$sql = "INSERT INTO ".$query->getTable().' ('.implode(", ", $columns).') VALUES ('.$placeholders.')';
 			$this->connection->beginTransaction();
 			$stmt = $this->connection->prepare($sql);
 			$return = [];
-			foreach($data as $row)
-			{
+			foreach ($data as $row) {
 				if($stmt->execute($row))
 				{
 					$return[] = $this->connection->lastInsertId();
+					continue;
 				}
-				else
-				{
-					$return = false;
-					break;
-				}
+				
+				$return = false;
+				break;
 			}
 			if($return === false)
 			{
 				$this->connection->rollBack();
+				return $return;
 			}
-			else
-			{
-				$this->connection->commit();
-			}
+				
+			$this->connection->commit();
 			return $return;
 		}
-		else
-		{
-			throw new \Exception('A table must be selected first');
-		}
+			
+		throw new \Exception('A table must be selected first');
 	}
 	
 	/*
@@ -287,26 +267,22 @@ class PDODriver implements DriverInterface
 	*/
 	public function update(array $columns, Query $query)
 	{
-		if($query->getTable() != '')
-		{
+		if($query->getTable() != '') {
 			$columnNames = array_keys($columns);
 			$update = [];
 			$data = [];
-			foreach($columnNames as $name)
-			{
+			foreach ($columnNames as $name) {
 				$update[] = $name.' = ?';
 				$data[] = $columns[$name];
 			}
-			$Where = $this->buildWheres($query);
-			$data = array_merge($data, $Where['data']);
-			$sql = "UPDATE ".$query->getTable().' SET '.implode(", ", $update).$Where['placeholders'];
+			$where = $this->buildWheres($query);
+			$data = array_merge($data, $where['data']);
+			$sql = "UPDATE ".$query->getTable().' SET '.implode(", ", $update).$where['placeholders'];
 			$stmt = $this->connection->prepare($sql);
 			return $stmt->execute($data);
 		}
-		else
-		{
-			throw new \Exception('A table must be selected first');
-		}
+			
+		throw new \Exception('A table must be selected first');
 	}
 	
 	/*
@@ -320,25 +296,19 @@ class PDODriver implements DriverInterface
 	*/
 	public function delete(Query $query)
 	{
-		if($query->getTable() != '')
-		{
-			if(count($query->getWheres()) > 0)
-			{
-				$Where = $this->buildWheres($query);
-				$data = array_merge($data, $Where['data']);
-				$sql = "DELETE FROM ".$query->getTable().$Where['placeholders'];
+		if($query->getTable() != '') {
+			if(count($query->getWheres()) > 0) {
+				$where = $this->buildWheres($query);
+				$data = array_merge($data, $where['data']);
+				$sql = "DELETE FROM ".$query->getTable().$where['placeholders'];
 				$stmt = $this->connection->prepare($sql);
 				return $stmt->execute($data);
 			}
-			else
-			{
-				throw new \Exception('Deletes must have where constraints');
-			}
+				
+			throw new \Exception('Deletes must have where constraints');
 		}
-		else
-		{
-			throw new \Exception('A table must be selected first');
-		}
+			
+		throw new \Exception('A table must be selected first');
 	}
 	
 	/*
@@ -352,16 +322,13 @@ class PDODriver implements DriverInterface
 	*/
 	public function truncate(Query $query)
 	{
-		if($query->getTable() != '')
-		{
+		if($query->getTable() != '') {
 			$sql = "TRUNCATE TABLE ".$query->getTable();
 			$stmt = $this->connection->prepare($sql);
 			return $stmt->execute();
 		}
-		else
-		{
-			throw new \Exception('A table must be selected first');
-		}
+			
+		throw new \Exception('A table must be selected first');
 	}
 	
 	/*
@@ -370,13 +337,13 @@ class PDODriver implements DriverInterface
 	*
 	*	@param string $query
 	*	@param array $data
+	*
 	*	@return PDOStatement
 	*/
 	public function raw($query, array $data = [])
 	{
 		$stmt = $this->connection->prepare($query);
-		if($stmt->execute($data))
-		{
+		if($stmt->execute($data)) {
 			return $stmt;
 		}
 	}

@@ -8,56 +8,56 @@ class Query
 	*
 	*	@var string[]
 	*/
-	protected $Fields = array();
+	protected $fields = array();
 	
 	/*
 	*	Table name that the query is to be run against
 	*
 	*	@var string
 	*/
-	protected $Table;
+	protected $table;
 	
 	/*
 	*	Array of where conditions to apply to the query
 	*
 	*	@var mixed[]
 	*/
-	protected $Where = array();
+	protected $where = array();
 	
 	/*
 	*	Array of join conditions to apply to the query
 	*
 	*	@var mixed[]
 	*/
-	protected $Joins = array();
+	protected $joins = array();
 	
 	/*
 	*	Array of ordering conditions to apply to the query
 	*
 	*	@var mixed[]
 	*/
-	protected $Order = array();
+	protected $order = array();
 	
 	/*
 	*	Array of grouping conditions to apply to the query
 	*
 	*	@var mixed[]
 	*/
-	protected $Group = array();
+	protected $group = array();
 	
 	/*
 	*	Array of having conditions to apply to the query
 	*
 	*	@var mixed[]
 	*/
-	protected $Having = array();
+	protected $having = array();
 	
 	/*
 	*	Limit clause to apply to the query
 	*
 	*	@var string
 	*/
-	protected $Limit;
+	protected $limit;
 	
 	/*
 	*	Set what fields to retreive in the query
@@ -70,21 +70,16 @@ class Query
 	*/
 	public function setFields($fields)
 	{
-		if(is_array($fields) || is_string($fields))
-		{
-			if(is_array($fields))
-			{
-				$this->Fields = $fields;
+		if(is_array($fields) || is_string($fields)) {
+			if(is_array($fields)) {
+				$this->fields = $fields;
+				return;
 			}
-			else
-			{
-				$this->Fields[] = $fields;
-			}
+			$this->fields[] = $fields;
+			
+			return;
 		}
-		else
-		{
-			throw new \Exception('Expected either a string or array');
-		}
+		throw new \Exception('Expected either a string or array');
 	}
 	
 	/*
@@ -97,17 +92,14 @@ class Query
 	*
 	*	@return void
 	*/
-	public function setTable($table, $alias = NULL)
+	public function setTable($table, $alias = null)
 	{
-		if(is_string($table))
-		{
-			$this->Table = $table.($alias === NULL ? '' : ' AS '.$alias);
-			return $this;
+		if(is_string($table)) {
+			$this->table = $table.($alias === null ? '' : ' AS '.$alias);
+			return;
 		}
-		else
-		{
-			throw new \Exception('Expected a string');
-		}
+		
+		throw new \Exception('Expected a string');
 	}
 	
 	/*
@@ -122,33 +114,26 @@ class Query
 	public function setWhere(...$args)
 	{
 		//	if only 1 argument in the array
-		if(count($args[0]) === 1)
-		{
+		if(count($args[0]) === 1) {
 			//	the argument has to be an array
-			if(is_array($args[0]))
-			{
-				foreach($args[0] as $Condition)
-				{
+			if(is_array($args[0])) {
+				foreach ($args[0] as $condition) {
 					//	each condition must be an array
-					if(is_array($Condition))
-					{
-						$this->where_condition($Condition);
+					if(is_array($condition)) {
+						$this->where_condition($condition);
+						continue;
 					}
-					else
-					{
-						throw new \Exception('Expected an array');
-					}
+					
+					throw new \Exception('Expected an array');
 				}
+				
+				return;
 			}
-			else
-			{
-				throw new \Exception('Expected an array');
-			}
+			
+			throw new \Exception('Expected an array');
 		}
-		else
-		{
-			$this->where_condition($args[0]);
-		}
+		
+		$this->where_condition($args[0]);
 	}
 	
 	/*
@@ -163,28 +148,24 @@ class Query
 	protected function where_condition(array $args)
 	{
 		//	if 2 arguments for a condition, shortcut for =
-		if(count($args) === 2)
-		{
+		if(count($args) === 2) {
 			/*	
 			*	ex.		id = 12
 			*	ex.		name = 'test'
 			*/
-			$this->Where[] = [$args[0].' = ?' => $args[1]];
+			$this->where[] = [$args[0].' = ?' => $args[1]];
 		}
 		//	if 3 arguments, 2nd is operator, 3rd is value
-		elseif(count($args) === 3)
-		{
+		elseif(count($args) === 3) {
 			/*	
 			*	ex.		id = 12
 			*	ex.		name = 'test'
 			*/
-			$this->Where[] = [$args[0].' '.$args[1].' ?'=>$args[2]];
+			$this->where[] = [$args[0].' '.$args[1].' ?'=>$args[2]];
 		}
+		
 		//	condition can't have just 1 argument
-		else
-		{
-			throw new \Exception('Unexpected number of arguments in condition');
-		}
+		throw new \Exception('Unexpected number of arguments in condition');
 	}
 	
 	/*
@@ -200,38 +181,30 @@ class Query
 	public function addJoin($table, ...$args)
 	{
 		//	if $table is an array, the user is setting an alias
-		if(is_array($table))
-		{
+		if(is_array($table)) {
 			$table = $table[0].' AS '.$table[1];
 		}
 		//	if only 1 argument in the array
-		if(count($args[0]) === 1)
-		{
+		if(count($args[0]) === 1) {
 			//	the argument has to be an array
-			if(is_array($args[0]))
-			{
-				foreach($args[0][0] as $Condition)
-				{
+			if(is_array($args[0])) {
+				foreach ($args[0][0] as $condition) {
 					//	each condition must be an array
-					if(is_array($Condition))
-					{
-						$this->join_condition($table, $Condition);
+					if(is_array($condition)) {
+						$this->join_condition($table, $condition);
+						continue;
 					}
-					else
-					{
-						throw new \Exception('Expected an array');
-					}
+					
+					throw new \Exception('Expected an array');
 				}
+				
+				return;
 			}
-			else
-			{
-				throw new \Exception('Expected an array');
-			}
+			
+			throw new \Exception('Expected an array');
 		}
-		else
-		{
-			$this->join_condition($table, $args[0]);
-		}
+		
+		$this->join_condition($table, $args[0]);
 	}
 	
 	/*
@@ -254,7 +227,7 @@ class Query
 				*	ex.		id = 12
 				*	ex.		name = 'test'
 				*/
-				$this->Joins[$table][] = $args[0].' = '.$args[1];
+				$this->joins[$table][] = $args[0].' = '.$args[1];
 				break;
 			//	if 3 arguments, 2nd is operator, 3rd is value unless 3rd is boolean
 			case 3:
@@ -262,7 +235,7 @@ class Query
 				*	ex.		id = 12
 				*	ex.		name = 'test'
 				*/
-				$this->Joins[$table][] = $args[0].' '.(is_bool($args[2])  ? ($args[2] === true ? ' = '.$args[1] : " = '".$args[1]."'") : $args[1]." ".$args[2]);
+				$this->joins[$table][] = $args[0].' '.(is_bool($args[2])  ? ($args[2] === true ? ' = '.$args[1] : " = '".$args[1]."'") : $args[1]." ".$args[2]);
 				break;
 			//	if 4 arguments, 4th tells us whether to treat 2nd value (arg 3) as a column name (no 's)
 			case 4:
@@ -270,7 +243,7 @@ class Query
 				*	ex.		id = user_id		4th = true
 				*	ex.		name = 'test'	4th = false
 				*/
-				$this->Joins[$table][] = $args[0].' '.$args[1].' '.((is_bool($args[3]) && $args[3] === true) ? $args[2] : "'".$args[2]."'");
+				$this->joins[$table][] = $args[0].' '.$args[1].' '.((is_bool($args[3]) && $args[3] === true) ? $args[2] : "'".$args[2]."'");
 				break;
 			//	condition can't have just 1 argument
 			default:
@@ -288,16 +261,14 @@ class Query
 	*
 	*	@return void
 	*/
-	public function setLimit($limit, $offset = NULL)
+	public function setLimit($limit, $offset = null)
 	{
-		if(is_int($limit))
-		{
-			$this->Limit = ($offset !== NULL ? $offset.',' : '').$limit;
+		if(is_int($limit)) {
+			$this->limit = ($offset !== null ? $offset.',' : '').$limit;
+			return;
 		}
-		else
-		{
-			throw new \Exception('Expected an integer');
-		}
+		
+		throw new \Exception('Expected an integer');
 	}
 	
 	/*
@@ -309,31 +280,26 @@ class Query
 	*
 	*	@return void
 	*/
-	public function setOrder($Order)
+	public function setOrder($order)
 	{
-		if(is_array($Order))
-		{
+		if(is_array($order)) {
 			//	if it's a multi-dimensional array, there are multiple ordering constraints
-			if(is_array($Order[0]))
-			{
-				foreach($Order as $Constraint)
-				{
-					$this->orderConstraint($Constraint);
+			if(is_array($order[0])) {
+				foreach ($order as $constraint) {
+					$this->orderConstraint($constraint);
 				}
+				return;
 			}
-			else
-			{
-				$this->orderConstraint($Constraint);
-			}
+			
+			$this->orderConstraint($constraint);
+			return;
 		}
-		elseif(is_string($Order))
-		{
-			$this->orderConstraint([$Order]);
+		elseif(is_string($order)) {
+			$this->orderConstraint([$order]);
+			return;
 		}
-		else
-		{
-			throw new \Exception('Expected either a string or an array');
-		}
+		
+		throw new \Exception('Expected either a string or an array');
 	}
 	
 	/*
@@ -351,10 +317,10 @@ class Query
 		{
 			//	only 1 item in array, default ordering on that column
 			case 1:
-				$this->Order[] = $constraint[0];
+				$this->order[] = $constraint[0];
 				break;
 			case 2:
-				$this->Order[] = $constraint[0].' '.$constraint[1];
+				$this->order[] = $constraint[0].' '.$constraint[1];
 				break;
 			default:
 				throw new \Exception('Unexpected number of arguments. Can only have up to 2');
@@ -372,21 +338,19 @@ class Query
 	*/
 	public function groupBy($column)
 	{
-		if(is_array($column))
-		{
-			foreach($column as $Constraint)
-			{
-				$this->groupConstraint($Constraint);
+		if(is_array($column)) {
+			foreach ($column as $constraint) {
+				$this->groupConstraint($constraint);
 			}
+			
+			return;
 		}
-		elseif(is_string($column))
-		{
+		elseif(is_string($column)) {
 			$this->groupConstraint($column);
+			return;
 		}
-		else
-		{
-			throw new \Exception('Expected either a string or an array');
-		}
+		
+		throw new \Exception('Expected either a string or an array');
 	}
 	
 	/*
@@ -400,14 +364,12 @@ class Query
 	*/
 	protected function groupConstraint($constraint)
 	{
-		if(is_string($constraint))
-		{
-			$this->Group[] = $constraint;
+		if(is_string($constraint)) {
+			$this->group[] = $constraint;
+			return;
 		}
-		else
-		{
-			throw new \Exception('Expected a string');
-		}
+		
+		throw new \Exception('Expected a string');
 	}
 	
 	/*
@@ -422,21 +384,17 @@ class Query
 	public function having(array $having)
 	{
 		// if just single-dimensional array
-		if(!is_array($having[0]))
-		{
+		if(!is_array($having[0])) {
 			$this->havingConstraint($having);
 			return;
 		}
-		foreach($having as $constraint)
-		{
-			if(is_array($constraint))
-			{
+		foreach($having as $constraint) {
+			if(is_array($constraint)) {
 				$this->havingConstraint($constraint);
+				continue;
 			}
-			else
-			{
-				throw new \Exception('Expected an array');
-			}
+			
+			throw new \Exception('Expected an array');
 		}
 	}
 	
@@ -455,10 +413,10 @@ class Query
 		{
 			//	implicit = operator
 			case 2:
-				$this->Having[] = [$constraint[0].' = ?' => $constraint[1]];
+				$this->having[] = [$constraint[0].' = ?' => $constraint[1]];
 				break;
 			case 3:
-				$this->Having[] = [$constraint[0].' '.$constraint[1].' ?' => $constraint[2]];
+				$this->having[] = [$constraint[0].' '.$constraint[1].' ?' => $constraint[2]];
 				break;
 			default:
 				throw new \Exception('Unexpected number of arguments. Can only have up to 3');
@@ -478,19 +436,17 @@ class Query
 	*/
 	public function in($column, array $values, $not = false)
 	{
-		if(is_string($column))
-		{
+		if(is_string($column)) {
 			$placeholders = '';
-			foreach($values as $value)
-			{
+			foreach($values as $value) {
 				$placeholders .= ($placeholders == '' ? '?' : ', ?');
 			}
-			$this->Where[] = [$column.' '.($not === false ? 'IN (' : 'NOT IN(').$placeholders.')'=>$values];
+			$this->where[] = [$column.' '.($not === false ? 'IN (' : 'NOT IN(').$placeholders.')' => $values];
+			
+			return;
 		}
-		else
-		{
-			throw new \Exception('Expected a string');
-		}
+		
+		throw new \Exception('Expected a string');
 	}
 	
 	/*
@@ -500,7 +456,7 @@ class Query
 	*/
 	public function getTable()
 	{
-		return $this->Table;
+		return $this->table;
 	}
 	
 	/*
@@ -510,7 +466,7 @@ class Query
 	*/
 	public function getFields()
 	{
-		return $this->Fields;
+		return $this->fields;
 	}
 	
 	/*
@@ -520,7 +476,7 @@ class Query
 	*/
 	public function getJoins()
 	{
-		return $this->Joins;
+		return $this->joins;
 	}
 	
 	/*
@@ -530,7 +486,7 @@ class Query
 	*/
 	public function getWheres()
 	{
-		return $this->Where;
+		return $this->where;
 	}
 	
 	/*
@@ -540,7 +496,7 @@ class Query
 	*/
 	public function getOrder()
 	{
-		return $this->Order;
+		return $this->order;
 	}
 	
 	/*
@@ -550,7 +506,7 @@ class Query
 	*/
 	public function getGroup()
 	{
-		return $this->Group;
+		return $this->group;
 	}
 	
 	/*
@@ -560,7 +516,7 @@ class Query
 	*/
 	public function getHaving()
 	{
-		return $this->Having;
+		return $this->having;
 	}
 	
 	/*
@@ -570,6 +526,6 @@ class Query
 	*/
 	public function getLimit()
 	{
-		return $this->Limit;
+		return $this->limit;
 	}
 }

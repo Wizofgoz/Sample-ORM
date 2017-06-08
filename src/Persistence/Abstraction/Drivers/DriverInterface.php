@@ -1,6 +1,8 @@
 <?php
 namespace SampleORM\Persistence\Abstraction\Drivers;
+
 use SampleORM\Persistence\Abstraction\Query;
+
 interface DriverInterface
 {
 	public function select(Query $query);

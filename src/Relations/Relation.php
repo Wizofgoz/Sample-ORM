@@ -1,10 +1,6 @@
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Untitled Document</title>
-</head>
+<?php
+namespace SampleORM\Relations;
 
-<body>
-</body>
-</html>
+class Relation
+{
+}

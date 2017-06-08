@@ -8,32 +8,32 @@ use Closure;
 
 class Collection implements Countable, ArrayAccess, Iterator
 {
-	/*
-	*	Current position of the pointer
-	*
-	*	@var int
-	*/
-	private $position = 0;
+    /*
+    *	Current position of the pointer
+    *
+    *	@var int
+    */
+    private $position = 0;
 	
-	/*
-	*	Container for holding data internally
-	*
-	*	@var array
-	*/
-	private $container = [];
+    /*
+    *	Container for holding data internally
+    *
+    *	@var array
+    */
+    private $container = [];
 	
-	/*
-	*	Initialize the object
-	*
-	*	@param array $array
-	*
-	*	@return void
-	*/
-	public function __construct(array $array = [])
-	{
-		$this->position = 0;
-		$this->container = $array;
-	}
+    /*
+    *	Initialize the object
+    *
+    *	@param array $array
+    *
+    *	@return void
+    */
+    public function __construct(array $array = [])
+    {
+        $this->position = 0;
+        $this->container = $array;
+    }
 	
 	/*
 	*	Gets the data at the current position
@@ -102,11 +102,11 @@ class Collection implements Countable, ArrayAccess, Iterator
 	*
 	*	@param mixed $offset
 	*
-	*	@return mixed|NULL
+	*	@return mixed|null
 	*/
 	public function offsetGet($offset)
 	{
-		return isset($this->container[$offset]) ? $this->container[$offset] : NULL; 
+		return isset($this->container[$offset]) ? $this->container[$offset] : null; 
 	}
 	
 	/*
@@ -119,8 +119,7 @@ class Collection implements Countable, ArrayAccess, Iterator
 	*/
 	public function offsetSet($offset, $value)
 	{
-		if (is_null($offset)) 
-		{
+		if (is_null($offset)) {
             $this->container[] = $value;
 			return;
         }
@@ -158,15 +157,15 @@ class Collection implements Countable, ArrayAccess, Iterator
 	*
 	*	@return bool
 	*/
-	public function contains($first, $second = NULL)
+	public function contains($first, $second = null)
 	{
-		if($second === NULL)
-		{
-			foreach($this->container as $value)
-			{
-				if($value == $first)
-					return;
+		if($second === null) {
+			foreach ($this->container as $value) {
+				if($value == $first) {
+					return true;
+				}
 			}
+			
 			return false;
 		}
 		
@@ -182,10 +181,10 @@ class Collection implements Countable, ArrayAccess, Iterator
 	*/
 	public function each(Closure $closure)
 	{
-		foreach($this->container as $key => $value)
-		{
-			if($closure($key, $value))
+		foreach ($this->container as $key => $value) {
+			if($closure($key, $value)) {
 				return;
+			}
 		}
 	}
 }

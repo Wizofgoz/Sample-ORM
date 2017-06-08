@@ -1,5 +1,6 @@
 <?php
 namespace SampleORM;
+
 class SampleORM
 {
 	/*
@@ -50,8 +51,7 @@ class SampleORM
 			default:
 				throw new \Exception('Given slug is not defined');
 		}
-		if(!isset($this->booted[$class]))
-		{
+		if(!isset($this->booted[$class])) {
 			$this->booted[$class] = $this->resolveDependencies($class);
 		}
 		
@@ -68,20 +68,16 @@ class SampleORM
 	protected function resolveDependencies($class)
 	{
 		$dependencies = [];
-		foreach($this->definitions[$class] as $dependency)
-		{
-			if(!empty($dependency) && $dependency != 'static')
-			{
-				foreach($dependency as $item)
-				{
+		foreach ($this->definitions[$class] as $dependency) {
+			if(!empty($dependency) && $dependency != 'static') {
+				foreach ($dependency as $item) {
 					$dependencies = array_merge($dependencies, $this->resolveDependencies($item));
 				}
 				
 				continue;
 			}
 		}
-		if(isset($this->definitions[$class]['static']))
-		{
+		if(isset($this->definitions[$class]['static'])) {
 			$method = $this->definitions[$class]['static'];
 			return $class::$method(...$dependencies);
 		}

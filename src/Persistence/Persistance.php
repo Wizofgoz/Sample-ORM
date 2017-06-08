@@ -1,14 +1,33 @@
 <?php
 namespace SampleORM\Persistence;
+
 use \SampleORM\Persistence\Abstraction\Drivers\DriverInterface;
 use \SampleORM\Persistence\Abstraction\Query;
 
 class Persistence
 {
+	/*
+	*	Driver to run queries against
+	*
+	*	@var DriverInterface
+	*/
 	protected $driver;
 	
+	/*
+	*	Query object
+	*
+	*	@var Query
+	*/
 	protected $query;
 	
+	/*
+	*	Initialize the object
+	*
+	*	@param DriverInterface $driver
+	*	@param Query $query
+	*
+	*	@return void
+	*/
 	public function __construct(DriverInterface $driver, Query $query)
 	{
 		$this->driver = $driver;
@@ -18,7 +37,8 @@ class Persistence
 	/*
 	*	Function to set what field(s) to retrieve in query
 	*
-	*	@arg mixed $fields
+	*	@param mixed $fields
+	*
 	*	@return $this
 	*/
 	public function select($fields)
@@ -30,11 +50,12 @@ class Persistence
 	/*
 	*	Function to set what table to retrieve from in query
 	*
-	*	@arg string $table
-	*	@arg string alias
+	*	@param string $table
+	*	@param string alias
+	*
 	*	@return $this
 	*/
-	public function table($table, $alias = NULL)
+	public function table($table, $alias = null)
 	{
 		$this->query->setTable($table, $alias);
 		return $this;
@@ -54,8 +75,9 @@ class Persistence
 	/*
 	*	Function to set how another table should be joined in the query
 	*
-	*	@arg string|array $table
-	*	@arg array $args
+	*	@param string|array $table
+	*	@param array $args
+	*
 	*	@return $this
 	*/
 	public function join($table, ...$args)
@@ -69,9 +91,10 @@ class Persistence
 	*
 	*	@param int $limit
 	*	@param int $offset
+	*
 	*	@return $this
 	*/
-	public function limit($limit, $offset = NULL)
+	public function limit($limit, $offset = null)
 	{
 		$this->query->setLimit($limit, $offset);
 		return $this;
@@ -81,6 +104,7 @@ class Persistence
 	*	Set order query should be matched to
 	*
 	*	@param array $Order
+	*
 	*	@return $this
 	*/
 	public function orderBy(array $Order)
@@ -92,7 +116,8 @@ class Persistence
 	/*
 	*	Set any grouping conditions
 	*
-	*	@param string/array $column
+	*	@param string|array $column
+	*
 	*	@return $this
 	*/
 	public function groupBy($column)
@@ -105,6 +130,7 @@ class Persistence
 	*	Set Having clause conditions
 	*
 	*	@param array $having
+	*
 	*	@return $this
 	*/
 	public function having(array $having)
@@ -117,8 +143,9 @@ class Persistence
 	*	Add where condition that uses the IN () syntax
 	*
 	*	@param string $column
-	*	@param array	$values
+	*	@param array $values
 	*	@param bool	$not
+	*
 	*	@return $this
 	*/
 	public function in($column, array $values, $not = false)
