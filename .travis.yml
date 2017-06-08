@@ -5,5 +5,4 @@ php:
   - nightly
 addons:
     code_climate:
-        repo_token: 458243278092b0bf11e6a14a5ddc13237eef4e865354ff40e136a62e69452b9d
-before_script: composer install
+        repo_token: ca49fd5d179a4d21090e163fa11ff54861467f3f8330631c3a6c7efbae21c24c
