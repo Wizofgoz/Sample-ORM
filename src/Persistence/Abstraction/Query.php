@@ -117,10 +117,10 @@ class Query
 		if(count($args[0]) === 1) {
 			//	the argument has to be an array
 			if(is_array($args[0])) {
-				foreach ($args[0] as $condition) {
+				foreach ($args[0] as $condition) { 
 					//	each condition must be an array
 					if(is_array($condition)) {
-						$this->where_condition($condition);
+						$this->where[] = $this->triCondition($condition);
 						continue;
 					}
 					
@@ -133,19 +133,19 @@ class Query
 			throw new \Exception('Expected an array');
 		}
 		
-		$this->where_condition($args[0]);
+		$this->where[] = $this->triCondition($args);
 	}
 	
 	/*
-	*	Adds individual condition to Where array
+	*	Parses a condition that expects 2-3 arguments
 	*
-	*	@param array $args
+	*	@param mixed[] $args
 	*
-	*	@throws \Exception
+	*	#throws \Exception
 	*
-	*	@return void
+	*	@return array
 	*/
-	protected function where_condition(array $args)
+	protected function triCondition(array $args)
 	{
 		//	if 2 arguments for a condition, shortcut for =
 		if(count($args) === 2) {
@@ -153,7 +153,7 @@ class Query
 			*	ex.		id = 12
 			*	ex.		name = 'test'
 			*/
-			$this->where[] = [$args[0].' = ?' => $args[1]];
+			return [$args[0].' = ?' => $args[1]];
 		}
 		//	if 3 arguments, 2nd is operator, 3rd is value
 		elseif(count($args) === 3) {
@@ -161,7 +161,7 @@ class Query
 			*	ex.		id = 12
 			*	ex.		name = 'test'
 			*/
-			$this->where[] = [$args[0].' '.$args[1].' ?'=>$args[2]];
+			return [$args[0].' '.$args[1].' ?'=>$args[2]];
 		}
 		
 		//	condition can't have just 1 argument
@@ -191,7 +191,7 @@ class Query
 				foreach ($args[0][0] as $condition) {
 					//	each condition must be an array
 					if(is_array($condition)) {
-						$this->join_condition($table, $condition);
+						$this->joinCondition($table, $condition);
 						continue;
 					}
 					
@@ -204,7 +204,7 @@ class Query
 			throw new \Exception('Expected an array');
 		}
 		
-		$this->join_condition($table, $args[0]);
+		$this->joinCondition($table, $args[0]);
 	}
 	
 	/*
@@ -217,7 +217,7 @@ class Query
 	*
 	*	@return void
 	*/
-	protected function join_condition($table, array $args)
+	protected function joinCondition($table, array $args)
 	{
 		switch(count($args))
 		{
@@ -235,7 +235,9 @@ class Query
 				*	ex.		id = 12
 				*	ex.		name = 'test'
 				*/
-				$this->joins[$table][] = $args[0].' '.(is_bool($args[2])  ? ($args[2] === true ? ' = '.$args[1] : " = '".$args[1]."'") : $args[1]." ".$args[2]);
+				$this->joins[$table][] = $args[0].' '.(is_bool($args[2]) ? 
+					($args[2] === true ? ' = '.$args[1] : " = '".$args[1]."'") : 
+					$args[1]." ".$args[2]);
 				break;
 			//	if 4 arguments, 4th tells us whether to treat 2nd value (arg 3) as a column name (no 's)
 			case 4:
@@ -243,7 +245,8 @@ class Query
 				*	ex.		id = user_id		4th = true
 				*	ex.		name = 'test'	4th = false
 				*/
-				$this->joins[$table][] = $args[0].' '.$args[1].' '.((is_bool($args[3]) && $args[3] === true) ? $args[2] : "'".$args[2]."'");
+				$this->joins[$table][] = $args[0].' '.$args[1].' '.((is_bool($args[3]) && $args[3] === true) ? 
+					$args[2] : "'".$args[2]."'");
 				break;
 			//	condition can't have just 1 argument
 			default:
@@ -385,12 +388,12 @@ class Query
 	{
 		// if just single-dimensional array
 		if(!is_array($having[0])) {
-			$this->havingConstraint($having);
+			$this->having[] = $this->triCondition($having);
 			return;
 		}
-		foreach($having as $constraint) {
+		foreach ($having as $constraint) {
 			if(is_array($constraint)) {
-				$this->havingConstraint($constraint);
+				$this->having[] = $this->triCondition($constraint);
 				continue;
 			}
 			
@@ -399,49 +402,48 @@ class Query
 	}
 	
 	/*
-	*	Add individual having constraint
-	*
-	*	@param array $constraint
-	*
-	*	@throws \Exception
-	*
-	*	@return void
-	*/
-	protected function havingConstraint(array $constraint)
-	{
-		switch(count($constraint))
-		{
-			//	implicit = operator
-			case 2:
-				$this->having[] = [$constraint[0].' = ?' => $constraint[1]];
-				break;
-			case 3:
-				$this->having[] = [$constraint[0].' '.$constraint[1].' ?' => $constraint[2]];
-				break;
-			default:
-				throw new \Exception('Unexpected number of arguments. Can only have up to 3');
-		}
-	}
-	
-	/*
 	*	Adds condition to Where array using the IN syntax
 	*
 	*	@param string $column
 	*	@param array $values
-	*	@param bool $not
 	*
 	*	@throws \Exception
 	*
 	*	@return void
 	*/
-	public function in($column, array $values, $not = false)
+	public function in($column, array $values)
 	{
 		if(is_string($column)) {
 			$placeholders = '';
-			foreach($values as $value) {
+			for($i = 0; $i < count($values); $i++) {
 				$placeholders .= ($placeholders == '' ? '?' : ', ?');
 			}
-			$this->where[] = [$column.' '.($not === false ? 'IN (' : 'NOT IN(').$placeholders.')' => $values];
+			$this->where[] = [$column.' IN ('.$placeholders.')' => $values];
+			
+			return;
+		}
+		
+		throw new \Exception('Expected a string');
+	}
+	
+	/*
+	*	Adds condition to Where array using the NOT IN syntax
+	*
+	*	@param string $column
+	*	@param array $values
+	*
+	*	@throws \Exception
+	*
+	*	@return void
+	*/
+	public function notIn($column, array $values)
+	{
+		if(is_string($column)) {
+			$placeholders = '';
+			for($i = 0; $i < count($values); $i++) {
+				$placeholders .= ($placeholders == '' ? '?' : ', ?');
+			}
+			$this->where[] = [$column.' NOT IN('.$placeholders.')' => $values];
 			
 			return;
 		}
