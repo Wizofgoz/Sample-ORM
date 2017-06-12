@@ -2,7 +2,6 @@
 
 namespace SampleORM\Persistence\Connections;
 
-use SampleORM\Collection\Collection;
 use SampleORM\Config\ConfigManager;
 
 class PDO extends \PDO implements ConnectionInterface

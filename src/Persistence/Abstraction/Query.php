@@ -52,13 +52,13 @@ class Query
     *	@var mixed[]
     */
     protected $having = [];
-	
-	/*
-	*	Array of unions to apply to the query
-	*
-	*	@var Query[]
-	*/
-	protected $unions = [];
+
+    /*
+    *	Array of unions to apply to the query
+    *
+    *	@var Query[]
+    */
+    protected $unions = [];
 
     /*
     *	Limit clause to apply to the query
@@ -66,13 +66,13 @@ class Query
     *	@var string
     */
     protected $limit;
-	
-	/*
-	*	Connection to the database
-	*
-	*	@var \SampleORM\Persistence\Drivers\DriverInterface
-	*/
-	protected $connection;
+
+    /*
+    *	Connection to the database
+    *
+    *	@var \SampleORM\Persistence\Drivers\DriverInterface
+    */
+    protected $connection;
 
     /*
     *	Set what fields to retreive in the query
@@ -151,7 +151,8 @@ class Query
         }
 
         $this->where[] = new Condition(...$args);
-		return $this;
+
+        return $this;
     }
 
     /*
@@ -167,7 +168,8 @@ class Query
     public function addJoin($table, ...$args)
     {
         $this->joins[] = new Join($table, ...$args);
-		return $this;
+
+        return $this;
     }
 
     /*
@@ -183,7 +185,8 @@ class Query
     public function setLimit($limit, $offset = null)
     {
         $this->limit = new Limit($limit, $offset);
-		return $this;
+
+        return $this;
     }
 
     /*
@@ -277,7 +280,8 @@ class Query
         }
 
         $this->having[] = new Condition(...$args);
-		return $this;
+
+        return $this;
     }
 
     /*
@@ -321,24 +325,24 @@ class Query
 
         throw new \Exception('Expected a string');
     }
-	
-	/*
-	*	Add a union to the query
-	*
-	*	@param Query|\Closure $query
-	*
-	*	@return Query
-	*/
-	public function union($query)
-	{
-		if($query instanceof \Closure) {
-			$function = $query;
-			$query = $function(new static);
-		}
-		$this->unions[] = $query;
-		
-		return $this;
-	}
+
+    /*
+    *	Add a union to the query
+    *
+    *	@param Query|\Closure $query
+    *
+    *	@return Query
+    */
+    public function union($query)
+    {
+        if ($query instanceof \Closure) {
+            $function = $query;
+            $query = $function(new static());
+        }
+        $this->unions[] = $query;
+
+        return $this;
+    }
 
     /*
     *	Returns the table for the query
