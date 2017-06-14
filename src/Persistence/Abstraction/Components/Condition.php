@@ -68,71 +68,45 @@ class Condition
 
         //	condition can't have less than 2 or more than 4 arguments
         throw new \Exception('Unexpected number of arguments in condition');
-    }
-
-    /*
-    *	Special function for specifying an IN clause
-    *
-    *	@param string $column
-    *	@param mixed $values
-    *
-    *	@return self
-    */
-    public static function in(string $column, $values)
-    {
-        return new static($column, 'IN', $values);
-    }
-
-    /*
-    *	Special function for specifying a NOT IN clause
-    *
-    *	@param string $column
-    *	@param mixed $values
-    *
-    *	@return self
-    */
-    public static function notIn(string $column, $values)
-    {
-        return new static($column, 'NOT IN', $values);
-    }
-
-    /*
-    *	Returns column name of the condition
-    *
-    *	@return string
-    */
-    public function getColumn()
-    {
-        return $this->column;
-    }
-
-    /*
-    *	Returns operator of the condition
-    *
-    *	@return string
-    */
-    public function getOperator()
-    {
-        return $this->operator;
-    }
-
-    /*
-    *	Returns value of the condition
-    *
-    *	@return mixed
-    */
-    public function getValue()
-    {
-        return $this->value;
-    }
-
-    /*
-    *	Returns whether the value is a column name
-    *
-    *	@return bool
-    */
-    public function valueIsColumn()
-    {
-        return $this->valueIsColumn;
-    }
+	}
+	
+	/*
+	*	Returns column name of the condition
+	*
+	*	@return string
+	*/
+	public function getColumn()
+	{
+		return $this->column;
+	}
+	
+	/*
+	*	Returns operator of the condition
+	*
+	*	@return string
+	*/
+	public function getOperator()
+	{
+		return $this->operator;
+	}
+	
+	/*
+	*	Returns value of the condition
+	*
+	*	@return mixed
+	*/
+	public function getValue()
+	{
+		return $this->value;
+	}
+	
+	/*
+	*	Returns whether the value is a column name
+	*
+	*	@return bool
+	*/
+	public function valueIsColumn()
+	{
+		return $this->valueIsColumn;
+	}
 }

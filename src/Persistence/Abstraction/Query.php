@@ -2,6 +2,11 @@
 
 namespace SampleORM\Persistence\Abstraction;
 
+use Closure;
+use SampleORM\Persistence\Drivers\DriverInterface;
+use SampleORM\Persistence\Grammars\GrammarInterface;
+use SampleORM\Persistence\SqlContainer;
+
 class Query
 {
     /*
@@ -66,6 +71,34 @@ class Query
     *	@var string
     */
     protected $limit;
+	
+	/*
+	*	Connection to the database
+	*
+	*	@var \SampleORM\Persistence\Drivers\DriverInterface
+	*/
+	protected $connection;
+	
+	/*
+	*	Grammar for compiling the query to sql
+	*
+	*	@var \SampleORM\Persistence\Grammars\GrammarInterface
+	*/
+	protected $grammar;
+	
+	/*
+	*	Initialize the object
+	*
+	*	@param \SampleORM\Persistence\Drivers\DriverInterface $connection
+	*	@param \SampleORM\Persistence\Grammars\GrammarInterface $grammar
+	*
+	*	@return void
+	*/
+	public function __construct(DriverInterface $connection, GrammarInterface $grammar)
+	{
+		$this->connection = $connection;
+		$this->grammar = $grammar;
+	}
 
     /*
     *	Connection to the database
@@ -77,25 +110,48 @@ class Query
     /*
     *	Set what fields to retreive in the query
     *
-    *	@param string|string[] $fields
+    *	@param string|mixed[]|\Closure|Query $fields
     *
     *	@throws \Exception
     *
     *	@return Query
     */
-    public function setFields($fields)
+    public function select($fields)
     {
-        if (is_array($fields) || is_string($fields)) {
-            if (is_array($fields)) {
-                $this->fields = $fields;
+		// handle array
+		if (is_array($fields)) {
+			foreach ($fields as $field) {
+				if(is_string($field) || $field instanceof self) {
+					$this->fields[] = $field;
+					continue;
+				}
+				elseif($field instanceof Closure) {
+					$function = $field;
+					$this->fields[] = $this->handleClosure($function);
+					continue;
+				}
 
-                return $this;
-            }
-            $this->fields[] = $fields;
+				throw new \Exception('Expected a string, Query object or Closure');
+			}
 
-            return $this;
-        }
-        throw new \Exception('Expected either a string or array');
+
+			return $this;
+		}
+		// handle string/Query
+		elseif(is_string($fields) || $fields instanceof self) {
+			$this->fields[] = $fields;
+			
+			return $this;
+		}
+		// handle Closure
+		elseif($fields instanceof Closure) {
+			$function = $fields;
+			$this->fields[] = $this->handleClosure($function);
+			
+			return $this;
+		}
+
+        throw new \Exception('Expected a string, Query object, Closure, or array');
     }
 
     /*
@@ -108,7 +164,7 @@ class Query
     *
     *	@return Query
     */
-    public function setTable($table, $alias = null)
+    public function table($table, $alias = null)
     {
         if (is_string($table)) {
             $this->table = $table.($alias === null ? '' : ' AS '.$alias);
@@ -128,7 +184,7 @@ class Query
     *
     *	@return Query
     */
-    public function setWhere(...$args)
+    public function where(...$args)
     {
         //	if only 1 argument in the array
         if (count($args[0]) === 1) {
@@ -146,7 +202,19 @@ class Query
 
                 return $this;
             }
-
+			// or a Query object
+			elseif($args[0] instanceof self) {
+				$this->where[] = $args[0];
+				
+				return $this;
+			}
+			// or a Closure
+			elseif($args[0] instanceof Closure) {
+				$function = $args[0];
+				$this->where[] = $this->handleClosure($function);
+				
+				return $this;
+			}
             throw new \Exception('Expected an array');
         }
 
@@ -154,6 +222,16 @@ class Query
 
         return $this;
     }
+	
+	/*
+	*	Return a new Query object
+	*
+	*	@return \SampleORM\Persistence\Abstraction\Query
+	*/
+	protected function newQuery()
+	{
+		return new static($this->connection, $this->grammar);
+	}
 
     /*
     *	Add a join to the query
@@ -165,12 +243,36 @@ class Query
     *
     *	@return Query
     */
-    public function addJoin($table, ...$args)
+    public function join($table, ...$args)
     {
-        $this->joins[] = new Join($table, ...$args);
-
-        return $this;
+		// if the table is an array, user is setting an alias
+		if(is_array($table) || $table instanceof self) {
+			// if the first element is a closure, it's a subquery
+			if($table[0] instanceof Closure) {
+				$function = $table[0];
+				$table = [$this->handleClosure($function), $table[1]];
+			}
+			$this->joins[] = new Join($table, ...$args);
+			
+			return $this;
+		}
+		// if the table is a Closure, it's a subquery
+        elseif($table instanceof Closure) {
+			$function = $table;
+			$this->joins[] = new Join($this->handleClosure($function), ...$args);
+			
+			return $this;
+		}
+		// otherwise
+		$this->joins[] = new Join($table, ...$args);
+		
+		return $this;
     }
+	
+	protected function handleClosure($closure)
+	{
+		return $closure($this->newQuery());
+	}
 
     /*
     *	Sets a limit for the query
@@ -182,7 +284,7 @@ class Query
     *
     *	@return Query
     */
-    public function setLimit($limit, $offset = null)
+    public function limit($limit, $offset = null)
     {
         $this->limit = new Limit($limit, $offset);
 
@@ -198,7 +300,7 @@ class Query
     *
     *	@return Query
     */
-    public function setOrder($order)
+    public function orderBy($order)
     {
         if (is_array($order)) {
             //	if it's a multi-dimensional array, there are multiple ordering constraints
@@ -294,15 +396,9 @@ class Query
     *
     *	@return Query
     */
-    public function in($column, $values)
+    public function whereIn($column, $values)
     {
-        if (is_string($column)) {
-            $this->where[] = Condition::in($column, $values);
-
-            return $this;
-        }
-
-        throw new \Exception('Expected a string');
+		return $this->inCondition($column, 'IN', $values);
     }
 
     /*
@@ -315,16 +411,125 @@ class Query
     *
     *	@return Query
     */
-    public function notIn($column, array $values)
+    public function whereNotIn($column, $values)
     {
+        return $this->inCondition($column, 'NOT IN', $values);
+    }
+	
+	/*
+	*	Handles IN and NOT IN conditions
+	*
+	*	@param string $column
+	*	@param string $operator
+	*	@param mixed $values
+	*
+	*	@throws \Exception
+	*
+	*	@return Query
+	*/
+	protected function inCondition($column, $operator, $values)
+	{
         if (is_string($column)) {
-            $this->where[] = Condition::notIn($column, $values);
+			if(is_array($values) || $values instanceof self) {
+				$this->where[] = new Condition($column, $operator, $values);
 
-            return $this;
+				return $this;
+			}
+			elseif($values instanceof Closure) {
+				$function = $values;
+				$this->where[] = new Condition($column, $operator, $this->handleClosure($function));
+				
+				return $this;
+			}
+			
+			throw new \Exception('Expected an array, Query object, or Closure for values');
         }
 
-        throw new \Exception('Expected a string');
-    }
+        throw new \Exception('Expected a string for column');
+	}
+	
+	/*
+	*	Add a union to the query
+	*
+	*	@param Query|\Closure $query
+	*
+	*	@return Query
+	*/
+	public function union($query)
+	{
+		if($query instanceof Closure) {
+			$function = $query;
+			$query = $this->handleClosure($function);
+		}
+		$this->unions[] = $query;
+		
+		return $this;
+	}
+	
+	/*
+	*	Run the query as a select
+	*
+	*	@return \SampleORM\Collection\Collection
+	*/
+	public function get()
+	{
+		return $this->connection->select($this->grammar->select($this));
+	}
+	
+	/*
+	*	Run the query as an insert
+	*
+	*	@return int
+	*/
+	public function insert(array $rows)
+	{
+		foreach ($values as $key => $value) {
+			ksort($value);
+			$values[$key] = $value;
+		}
+		
+		return $this->connection->insert(...$this->grammar->insert($rows, $this));
+	}
+	
+	/*
+	*	Run the query as an update
+	*
+	*	@return int
+	*/
+	public function update(array $data)
+	{
+		return $this->connection->update($this->grammar->update($data, $this));
+	}
+	
+	/*
+	*	Run the query as a delete
+	*
+	*	@return int
+	*/
+	public function delete()
+	{
+		return $this->connection->delete($this->grammar->delete($this));
+	}
+	
+	/*
+	*	Run the query as a truncate
+	*
+	*	@return bool
+	*/
+	public function truncate()
+	{
+		return $this->connection->truncate($this->grammar->truncate($this));
+	}
+	
+	/*
+	*	Run a raw query
+	*
+	*	@return \SampleORM\Collection\Collection
+	*/
+	public function raw(string $sql, array $data = [])
+	{
+		return $this->connection->raw(new SqlContainer($sql, $data));
+	}
 
     /*
     *	Add a union to the query
@@ -417,10 +622,20 @@ class Query
     /*
     *	Returns the set limit constraint for the query
     *
-    *	@return string
+    *	@return Limit
     */
     public function getLimit()
     {
         return $this->limit;
     }
+	
+	/*
+	*	Returns the set unions for the query
+	*
+	*	@return array
+	*/
+	public function getUnions()
+	{
+		return $this->unions;
+	}
 }

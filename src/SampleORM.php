@@ -41,7 +41,7 @@ class SampleORM
             case 'config':
                 $class = \SampleORM\Config\ConfigManager::class;
             case 'persistence':
-                $class = \SampleORM\Persistence\Persistence::class;
+                $class = \SampleORM\Persistence\Query::class;
             case 'query':
                 $class = \SampleORM\Persistence\Abstraction\Query::class;
             case 'collection':

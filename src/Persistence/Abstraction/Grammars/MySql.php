@@ -3,9 +3,18 @@
 namespace SampleORM\Persistence\Abstraction\Grammars;
 
 use SampleORM\Persistence\Abstraction\Query;
+use SampleORM\Persistence\Abstraction\Components\Condition;
+use SampleORM\Persistence\SqlContainer;
 
-class MySql
+class MySql implements GrammarInterface
 {
+	/*
+	*	Array of data to be bound in the query execution
+	*
+	*	@var array
+	*/
+	protected $dataBindings = [];
+	
     /*
     *	build query portion concerning table joins
     *
@@ -17,15 +26,46 @@ class MySql
     {
         $joins = '';
         $queryJoins = $query->getJoins();
-        if (count($queryJoins) > 0) {
-            $tables = array_keys($queryJoins);
-            for ($i = 0; $i < count($tables); $i++) {
-                $joins .= ' JOIN '.$tables[$i].' ON '.$queryJoins[$tables[$i]][0].(count($queryJoins[$tables[$i]]) > 1 ? ' AND ' : '').implode(' AND ', array_slice($queryJoins[$tables[$i]], 1));
-            }
-        }
+		foreach ($queryJoins as $join) {
+			$onConditions = $join->getConditions();
+			$joins .= " {$join->getType()} {$join->getTable()}";
+			if (count($onConditions) > 0) {
+				$joins .= " ON ";
+				$first = true;
+				foreach ($onConditions as $condition) {
+					$joins .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator()} {$this->resolveConditionValue($condition)}";
+					$first = false;
+				}
+			}
+		}
 
         return $joins;
     }
+	
+	/*
+	*	Resolve a condition into it's SQL equivalent
+	*
+	*	@param SampleORM\Persistence\Abstraction\Components\Condition $condition
+	*
+	*	@return mixed
+	*/
+	protected function resolveConditionValue(Condition $condition)
+	{
+		// resolve subquery
+		if ($condition->getValue() instanceof Query) {
+			return $this->select($condition->getValue());
+		} 
+		// simply return the value if it's meant to specify a column
+		elseif ($condition->valueIsColumn()) {
+			return $condition->getValue();
+		}
+		// bind the value and return a placeholder
+		// value could be an array for IN types so just encapsulate all non-arrays
+		$valueArr = (is_array($condition->getValue()) ? $condition->getValue() : [$condition->getValue()]);
+		$this->dataBindings[] = array_merge($valueArr);
+		
+		return '?';
+	}
 
     /*
     *	build query portion concerning where clauses
@@ -37,20 +77,16 @@ class MySql
     protected function buildWheres(Query $query)
     {
         $wheres = '';
-        $data = [];
-        $wheresArr = $query->getWheres();
-        foreach (end($wheresArr) as $key => $value) {
-            //	add where on first loop only, AND on all others
-            $wheres .= ($wheres == '' ? ' WHERE ' : ' AND ').$key;
-            if (is_array($value)) {
-                $data = array_merge($data, $value);
-                continue;
-            }
+		if (count($query->getWheres()) > 0) {
+			$first = true;
+			$wheres .= " WHERE ";
+			foreach ($query->getWheres() as $condition) {
+				$wheres .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator} {$this->resolveConditionValue($condition)}";
+				$first = false;
+			}
+		}
 
-            $data[] = $value;
-        }
-
-        return ['placeholders' => $wheres, 'data' => $data];
+        return $wheres;
     }
 
     /*
@@ -62,8 +98,33 @@ class MySql
     */
     protected function buildFields(Query $query)
     {
-        return count($query->getFields()) > 0 ? implode(', ', $query->getFields()) : '*';
+		if (count($query->getFields()) == 0) {
+			return '*';
+		}
+		$fields = [];
+        foreach ($query->getFields() as $field) {
+			// resolve subqueries
+			if ($field instanceof Query) {
+				$fields[] = $this->select($field);
+				continue;
+			}
+			$fields[] = $this->columnize($field);
+		}
+		
+		return implode(', ', $fields);
     }
+	
+	/*
+	*	Wrap the value in backticks
+	*
+	*	@param string $value
+	*
+	*	@return string
+	*/
+	protected function columnize(string $value)
+	{
+		return '`'.$value.'`';
+	}
 
     /*
     *	build query portion concerning order by clause
@@ -74,7 +135,17 @@ class MySql
     */
     protected function buildOrders(Query $query)
     {
-        return count($query->getOrder()) > 0 ? ' ORDER BY '.implode(',', $query->getOrder()) : '';
+		$orders = '';
+		if (count($query->getOrder()) > 0) {
+			$orders .= ' ORDER BY ';
+			$first = true;
+			foreach ($query->getOrder() as $order) {
+				$orders .= ($first ? '' : ', ')."{$order->getColumn()} {$order->getDirection()}";
+				$first = false;
+			}
+		}
+		
+		return $orders;
     }
 
     /*
@@ -86,7 +157,17 @@ class MySql
     */
     protected function buildGroups(Query $query)
     {
-        return count($query->getGroup()) > 0 ? ' GROUP BY '.implode(',', $query->getGroup()) : '';
+        $groups = '';
+		if (count($query->getGroup()) > 0) {
+			$groups .= ' ORDER BY ';
+			$first = true;
+			foreach ($query->getGroup() as $group) {
+				$groups .= ($first ? '' : ', ')."{$group->getColumn()}";
+				$first = false;
+			}
+		}
+		
+		return $groups;
     }
 
     /*
@@ -98,20 +179,17 @@ class MySql
     */
     protected function buildHaving(Query $query)
     {
-        $having = '';
-        $data = [];
-        foreach ($query->getHaving() as $key => $value) {
-            //	add where on first loop only, AND on all others
-            $having .= ($having == '' ? ' HAVING ' : ' AND ').$key;
-            if (is_array($value)) {
-                $data = array_merge($data, $value);
-                continue;
-            }
+        $havings = '';
+		if (count($query->getHaving()) > 0) {
+			$first = true;
+			$havings .= " HAVING ";
+			foreach ($query->getHaving() as $condition) {
+				$havings .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator} {$this->resolveConditionValue($condition)}";
+				$first = false;
+			}
+		}
 
-            $data[] = $value;
-        }
-
-        return ['placeholders' => $having, 'data' => $data];
+        return $havings;
     }
 
     /*
@@ -123,7 +201,13 @@ class MySql
     */
     protected function buildLimits(Query $query)
     {
-        return $query->getLimit() !== null ? ' LIMIT '.$query->getLimit() : '';
+		$limit = '';
+		if ($query->getLimit() instanceof Limit) {
+			$limitObj = $query->getLimit();
+			$limit .= " LIMIT {$limitObj->getLimit()}, {$limitObj->getOffset()}";
+		}
+		
+        return $limit;
     }
 
     /*
@@ -133,26 +217,16 @@ class MySql
     *
     *	@throws \Exception
     *
-    *	@return array
+    *	@return SampleORM\Persistence\SqlContainer
     */
     public function select(Query $query)
     {
         if ($query->getTable() != '') {
-            //	no prepared allowed
-            $fields = $this->buildFields($query);
-            //	prepared allowed
-            $joins = $this->buildJoins($query);
-            //	prepared allowed
-            $wheres = $this->buildWheres($query);
-            //	no prepared allowed
-            $orders = $this->buildOrders($query);
-            //	no prepared allowed
-            $groups = $this->buildGroups($query);
-            //	prepared allowed
-            $having = $this->buildHaving($query);
-            //	no prepared allowed
-            $limit = $this->buildLimits($query);
-            $sql = 'SELECT '.$fields.' FROM '.$query->getTable().$joins.$wheres.$orders.$groups.$having.$limit;
+            $sql = "SELECT {$this->buildFields($query)} FROM {$this->columnize($query->getTable())}".
+				"{$this->buildJoins($query)}{$this->buildWheres($query)}{$this->buildOrders($query)}".
+				"{$this->buildGroups($query)}{$this->buildHaving($query)}{$this->buildLimits($query)}";
+			
+			return new SqlContainer($sql, $this->dataBindings);
         }
 
         throw new \Exception('A table must be selected first');
@@ -166,7 +240,7 @@ class MySql
     *
     *	@throws \Exception
     *
-    *	@return array
+    *	@return SampleORM\Persistence\SqlContainer
     */
     public function insert(array $rows, Query $query)
     {
@@ -178,7 +252,13 @@ class MySql
                 if (is_array($rows[$i])) {
                     //	get array keys as column names on first round
                     if (empty($columns)) {
-                        $columns = array_keys($rows[$i]);
+                        $columns = array_map(
+							function($element)
+							{ 
+								return $this->columnize($element); 
+							}, 
+							array_keys($rows[$i])
+						);
                     }
                     //	get array datas as values
                     $count = 0;
@@ -195,34 +275,18 @@ class MySql
             $placeholders = '';
             for ($i = 0; $i < count($columns); $i++) {
                 if ($placeholders == '') {
-                    $placeholders .= '?';
+                    $placeholders .= '(?';
                     continue;
                 }
 
                 $placeholders .= ', ?';
             }
-            $sql = 'INSERT INTO '.$query->getTable().' ('.implode(', ', $columns).') VALUES ('.$placeholders.')';
-            $this->connection->beginTransaction();
-            $stmt = $this->connection->prepare($sql);
-            $return = [];
-            foreach ($data as $row) {
-                if ($stmt->execute($row)) {
-                    $return[] = $this->connection->lastInsertId();
-                    continue;
-                }
-
-                $return = false;
-                break;
-            }
-            if ($return === false) {
-                $this->connection->rollBack();
-
-                return $return;
-            }
-
-            $this->connection->commit();
-
-            return $return;
+			$placeholders .= ')';
+			$placeholdersArr = [];
+			$placeholders = implode(', ', array_pad($placeholders, count($rows), $placeholders));
+            $sql = "INSERT INTO {$this->columnize($query->getTable())} (".implode(', ', $columns).") VALUES {$placeholders}";
+			
+            return new SqlContainer($sql, $data);
         }
 
         throw new \Exception('A table must be selected first');
@@ -236,7 +300,7 @@ class MySql
     *
     *	@throws \Exception
     *
-    *	@return bool
+    *	@return SampleORM\Persistence\SqlContainer
     */
     public function update(array $columns, Query $query)
     {
@@ -248,12 +312,11 @@ class MySql
                 $update[] = $name.' = ?';
                 $data[] = $columns[$name];
             }
-            $where = $this->buildWheres($query);
-            $data = array_merge($data, $where['data']);
-            $sql = 'UPDATE '.$query->getTable().' SET '.implode(', ', $update).$where['placeholders'];
-            $stmt = $this->connection->prepare($sql);
-
-            return $stmt->execute($data);
+            $sql = "UPDATE {$this->columnize($query->getTable())} SET ".implode(', ', $update).
+				"{$this->buildWheres($query)}{$this->buildOrders($query)}{$this->buildGroups($query)}".
+				"{$this->buildHaving($query)}{$this->buildLimits($query)}";
+            
+			return new SqlContainer($sql, array_merge($data, $this->dataBindings));
         }
 
         throw new \Exception('A table must be selected first');
@@ -266,21 +329,16 @@ class MySql
     *
     *	@throws \Exception
     *
-    *	@return bool
+    *	@return SampleORM\Persistence\SqlContainer
     */
     public function delete(Query $query)
     {
         if ($query->getTable() != '') {
-            if (count($query->getWheres()) > 0) {
-                $where = $this->buildWheres($query);
-                $data = array_merge($data, $where['data']);
-                $sql = 'DELETE FROM '.$query->getTable().$where['placeholders'];
-                $stmt = $this->connection->prepare($sql);
-
-                return $stmt->execute($data);
-            }
-
-            throw new \Exception('Deletes must have where constraints');
+			$sql = "DELETE FROM {$this->columnize($query->getTable())}{$this->buildWheres($query)}".
+				"{$this->buildOrders($query)}{$this->buildGroups($query)}".
+				"{$this->buildHaving($query)}{$this->buildLimits($query)}";
+			
+			return new SqlContainer($sql, array_merge($data, $this->dataBindings));
         }
 
         throw new \Exception('A table must be selected first');
@@ -293,34 +351,16 @@ class MySql
     *
     *	@throws \Exception
     *
-    *	@return boolean
+    *	@return SampleORM\Persistence\SqlContainer
     */
     public function truncate(Query $query)
     {
         if ($query->getTable() != '') {
-            $sql = 'TRUNCATE TABLE '.$query->getTable();
-            $stmt = $this->connection->prepare($sql);
-
-            return $stmt->execute();
+            $sql = "TRUNCATE TABLE {$this->columnize($query->getTable())}";
+			
+			return new SqlContainer($sql);
         }
 
         throw new \Exception('A table must be selected first');
-    }
-
-    /*
-    *	run a raw query against the DB. All applicable user-entered data should be shown as placeholders (?)
-    *	and actual data should be in $data array in order that they appear in query
-    *
-    *	@param string $query
-    *	@param array $data
-    *
-    *	@return PDOStatement
-    */
-    public function raw($query, array $data = [])
-    {
-        $stmt = $this->connection->prepare($query);
-        if ($stmt->execute($data)) {
-            return $stmt;
-        }
     }
 }
