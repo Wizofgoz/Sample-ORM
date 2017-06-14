@@ -488,7 +488,7 @@ class Query
 			$values[$key] = $value;
 		}
 		
-		return $this->connection->insert(...$this->grammar->insert($rows, $this));
+		return $this->connection->insert($this->grammar->insert($rows, $this));
 	}
 	
 	/*
