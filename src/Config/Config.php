@@ -2,9 +2,9 @@
 
 return [
     'database' => [
-		'driver' => \SampleORM\Persistance\Abstraction\Drivers\PDO::class,
-		'grammar'=> 'MySql'
-	],
+        'driver' => \SampleORM\Persistance\Abstraction\Drivers\PDO::class,
+        'grammar'=> 'MySql',
+    ],
 
     \SampleORM\Persistance\Connections\PDO::class => [
         'dsn'      => '',

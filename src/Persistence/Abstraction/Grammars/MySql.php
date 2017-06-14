@@ -2,19 +2,19 @@
 
 namespace SampleORM\Persistence\Abstraction\Grammars;
 
-use SampleORM\Persistence\Abstraction\Query;
 use SampleORM\Persistence\Abstraction\Components\Condition;
+use SampleORM\Persistence\Abstraction\Query;
 use SampleORM\Persistence\SqlContainer;
 
 class MySql implements GrammarInterface
 {
-	/*
-	*	Array of data to be bound in the query execution
-	*
-	*	@var array
-	*/
-	protected $dataBindings = [];
-	
+    /*
+    *	Array of data to be bound in the query execution
+    *
+    *	@var array
+    */
+    protected $dataBindings = [];
+
     /*
     *	build query portion concerning table joins
     *
@@ -26,46 +26,46 @@ class MySql implements GrammarInterface
     {
         $joins = '';
         $queryJoins = $query->getJoins();
-		foreach ($queryJoins as $join) {
-			$onConditions = $join->getConditions();
-			$joins .= " {$join->getType()} {$join->getTable()}";
-			if (count($onConditions) > 0) {
-				$joins .= " ON ";
-				$first = true;
-				foreach ($onConditions as $condition) {
-					$joins .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator()} {$this->resolveConditionValue($condition)}";
-					$first = false;
-				}
-			}
-		}
+        foreach ($queryJoins as $join) {
+            $onConditions = $join->getConditions();
+            $joins .= " {$join->getType()} {$join->getTable()}";
+            if (count($onConditions) > 0) {
+                $joins .= ' ON ';
+                $first = true;
+                foreach ($onConditions as $condition) {
+                    $joins .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator()} {$this->resolveConditionValue($condition)}";
+                    $first = false;
+                }
+            }
+        }
 
         return $joins;
     }
-	
-	/*
-	*	Resolve a condition into it's SQL equivalent
-	*
-	*	@param SampleORM\Persistence\Abstraction\Components\Condition $condition
-	*
-	*	@return mixed
-	*/
-	protected function resolveConditionValue(Condition $condition)
-	{
-		// resolve subquery
-		if ($condition->getValue() instanceof Query) {
-			return $this->select($condition->getValue());
-		} 
-		// simply return the value if it's meant to specify a column
-		elseif ($condition->valueIsColumn()) {
-			return $condition->getValue();
-		}
-		// bind the value and return a placeholder
-		// value could be an array for IN types so just encapsulate all non-arrays
-		$valueArr = (is_array($condition->getValue()) ? $condition->getValue() : [$condition->getValue()]);
-		$this->dataBindings[] = array_merge($valueArr);
-		
-		return '?';
-	}
+
+    /*
+    *	Resolve a condition into it's SQL equivalent
+    *
+    *	@param SampleORM\Persistence\Abstraction\Components\Condition $condition
+    *
+    *	@return mixed
+    */
+    protected function resolveConditionValue(Condition $condition)
+    {
+        // resolve subquery
+        if ($condition->getValue() instanceof Query) {
+            return $this->select($condition->getValue());
+        }
+        // simply return the value if it's meant to specify a column
+        elseif ($condition->valueIsColumn()) {
+            return $condition->getValue();
+        }
+        // bind the value and return a placeholder
+        // value could be an array for IN types so just encapsulate all non-arrays
+        $valueArr = (is_array($condition->getValue()) ? $condition->getValue() : [$condition->getValue()]);
+        $this->dataBindings[] = array_merge($valueArr);
+
+        return '?';
+    }
 
     /*
     *	build query portion concerning where clauses
@@ -77,14 +77,14 @@ class MySql implements GrammarInterface
     protected function buildWheres(Query $query)
     {
         $wheres = '';
-		if (count($query->getWheres()) > 0) {
-			$first = true;
-			$wheres .= " WHERE ";
-			foreach ($query->getWheres() as $condition) {
-				$wheres .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator} {$this->resolveConditionValue($condition)}";
-				$first = false;
-			}
-		}
+        if (count($query->getWheres()) > 0) {
+            $first = true;
+            $wheres .= ' WHERE ';
+            foreach ($query->getWheres() as $condition) {
+                $wheres .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator} {$this->resolveConditionValue($condition)}";
+                $first = false;
+            }
+        }
 
         return $wheres;
     }
@@ -98,33 +98,33 @@ class MySql implements GrammarInterface
     */
     protected function buildFields(Query $query)
     {
-		if (count($query->getFields()) == 0) {
-			return '*';
-		}
-		$fields = [];
+        if (count($query->getFields()) == 0) {
+            return '*';
+        }
+        $fields = [];
         foreach ($query->getFields() as $field) {
-			// resolve subqueries
-			if ($field instanceof Query) {
-				$fields[] = $this->select($field);
-				continue;
-			}
-			$fields[] = $this->columnize($field);
-		}
-		
-		return implode(', ', $fields);
+            // resolve subqueries
+            if ($field instanceof Query) {
+                $fields[] = $this->select($field);
+                continue;
+            }
+            $fields[] = $this->columnize($field);
+        }
+
+        return implode(', ', $fields);
     }
-	
-	/*
-	*	Wrap the value in backticks
-	*
-	*	@param string $value
-	*
-	*	@return string
-	*/
-	protected function columnize(string $value)
-	{
-		return '`'.$value.'`';
-	}
+
+    /*
+    *	Wrap the value in backticks
+    *
+    *	@param string $value
+    *
+    *	@return string
+    */
+    protected function columnize(string $value)
+    {
+        return '`'.$value.'`';
+    }
 
     /*
     *	build query portion concerning order by clause
@@ -135,17 +135,17 @@ class MySql implements GrammarInterface
     */
     protected function buildOrders(Query $query)
     {
-		$orders = '';
-		if (count($query->getOrder()) > 0) {
-			$orders .= ' ORDER BY ';
-			$first = true;
-			foreach ($query->getOrder() as $order) {
-				$orders .= ($first ? '' : ', ')."{$order->getColumn()} {$order->getDirection()}";
-				$first = false;
-			}
-		}
-		
-		return $orders;
+        $orders = '';
+        if (count($query->getOrder()) > 0) {
+            $orders .= ' ORDER BY ';
+            $first = true;
+            foreach ($query->getOrder() as $order) {
+                $orders .= ($first ? '' : ', ')."{$order->getColumn()} {$order->getDirection()}";
+                $first = false;
+            }
+        }
+
+        return $orders;
     }
 
     /*
@@ -158,16 +158,16 @@ class MySql implements GrammarInterface
     protected function buildGroups(Query $query)
     {
         $groups = '';
-		if (count($query->getGroup()) > 0) {
-			$groups .= ' ORDER BY ';
-			$first = true;
-			foreach ($query->getGroup() as $group) {
-				$groups .= ($first ? '' : ', ')."{$group->getColumn()}";
-				$first = false;
-			}
-		}
-		
-		return $groups;
+        if (count($query->getGroup()) > 0) {
+            $groups .= ' ORDER BY ';
+            $first = true;
+            foreach ($query->getGroup() as $group) {
+                $groups .= ($first ? '' : ', ')."{$group->getColumn()}";
+                $first = false;
+            }
+        }
+
+        return $groups;
     }
 
     /*
@@ -180,14 +180,14 @@ class MySql implements GrammarInterface
     protected function buildHaving(Query $query)
     {
         $havings = '';
-		if (count($query->getHaving()) > 0) {
-			$first = true;
-			$havings .= " HAVING ";
-			foreach ($query->getHaving() as $condition) {
-				$havings .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator} {$this->resolveConditionValue($condition)}";
-				$first = false;
-			}
-		}
+        if (count($query->getHaving()) > 0) {
+            $first = true;
+            $havings .= ' HAVING ';
+            foreach ($query->getHaving() as $condition) {
+                $havings .= ($first ? '' : ' AND ')."{$condition->getColumn()} {$condition->getOperator} {$this->resolveConditionValue($condition)}";
+                $first = false;
+            }
+        }
 
         return $havings;
     }
@@ -201,12 +201,12 @@ class MySql implements GrammarInterface
     */
     protected function buildLimits(Query $query)
     {
-		$limit = '';
-		if ($query->getLimit() instanceof Limit) {
-			$limitObj = $query->getLimit();
-			$limit .= " LIMIT {$limitObj->getLimit()}, {$limitObj->getOffset()}";
-		}
-		
+        $limit = '';
+        if ($query->getLimit() instanceof Limit) {
+            $limitObj = $query->getLimit();
+            $limit .= " LIMIT {$limitObj->getLimit()}, {$limitObj->getOffset()}";
+        }
+
         return $limit;
     }
 
@@ -223,10 +223,10 @@ class MySql implements GrammarInterface
     {
         if ($query->getTable() != '') {
             $sql = "SELECT {$this->buildFields($query)} FROM {$this->columnize($query->getTable())}".
-				"{$this->buildJoins($query)}{$this->buildWheres($query)}{$this->buildOrders($query)}".
-				"{$this->buildGroups($query)}{$this->buildHaving($query)}{$this->buildLimits($query)}";
-			
-			return new SqlContainer($sql, $this->dataBindings);
+                "{$this->buildJoins($query)}{$this->buildWheres($query)}{$this->buildOrders($query)}".
+                "{$this->buildGroups($query)}{$this->buildHaving($query)}{$this->buildLimits($query)}";
+
+            return new SqlContainer($sql, $this->dataBindings);
         }
 
         throw new \Exception('A table must be selected first');
@@ -253,12 +253,11 @@ class MySql implements GrammarInterface
                     //	get array keys as column names on first round
                     if (empty($columns)) {
                         $columns = array_map(
-							function($element)
-							{ 
-								return $this->columnize($element); 
-							}, 
-							array_keys($rows[$i])
-						);
+                            function ($element) {
+                                return $this->columnize($element);
+                            },
+                            array_keys($rows[$i])
+                        );
                     }
                     //	get array datas as values
                     $count = 0;
@@ -281,11 +280,11 @@ class MySql implements GrammarInterface
 
                 $placeholders .= ', ?';
             }
-			$placeholders .= ')';
-			$placeholdersArr = [];
-			$placeholders = implode(', ', array_pad($placeholders, count($rows), $placeholders));
+            $placeholders .= ')';
+            $placeholdersArr = [];
+            $placeholders = implode(', ', array_pad($placeholders, count($rows), $placeholders));
             $sql = "INSERT INTO {$this->columnize($query->getTable())} (".implode(', ', $columns).") VALUES {$placeholders}";
-			
+
             return new SqlContainer($sql, $data);
         }
 
@@ -313,10 +312,10 @@ class MySql implements GrammarInterface
                 $data[] = $columns[$name];
             }
             $sql = "UPDATE {$this->columnize($query->getTable())} SET ".implode(', ', $update).
-				"{$this->buildWheres($query)}{$this->buildOrders($query)}{$this->buildGroups($query)}".
-				"{$this->buildHaving($query)}{$this->buildLimits($query)}";
-            
-			return new SqlContainer($sql, array_merge($data, $this->dataBindings));
+                "{$this->buildWheres($query)}{$this->buildOrders($query)}{$this->buildGroups($query)}".
+                "{$this->buildHaving($query)}{$this->buildLimits($query)}";
+
+            return new SqlContainer($sql, array_merge($data, $this->dataBindings));
         }
 
         throw new \Exception('A table must be selected first');
@@ -334,11 +333,11 @@ class MySql implements GrammarInterface
     public function delete(Query $query)
     {
         if ($query->getTable() != '') {
-			$sql = "DELETE FROM {$this->columnize($query->getTable())}{$this->buildWheres($query)}".
-				"{$this->buildOrders($query)}{$this->buildGroups($query)}".
-				"{$this->buildHaving($query)}{$this->buildLimits($query)}";
-			
-			return new SqlContainer($sql, array_merge($data, $this->dataBindings));
+            $sql = "DELETE FROM {$this->columnize($query->getTable())}{$this->buildWheres($query)}".
+                "{$this->buildOrders($query)}{$this->buildGroups($query)}".
+                "{$this->buildHaving($query)}{$this->buildLimits($query)}";
+
+            return new SqlContainer($sql, array_merge($data, $this->dataBindings));
         }
 
         throw new \Exception('A table must be selected first');
@@ -357,8 +356,8 @@ class MySql implements GrammarInterface
     {
         if ($query->getTable() != '') {
             $sql = "TRUNCATE TABLE {$this->columnize($query->getTable())}";
-			
-			return new SqlContainer($sql);
+
+            return new SqlContainer($sql);
         }
 
         throw new \Exception('A table must be selected first');

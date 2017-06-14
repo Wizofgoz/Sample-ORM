@@ -71,34 +71,34 @@ class Query
     *	@var string
     */
     protected $limit;
-	
-	/*
-	*	Connection to the database
-	*
-	*	@var \SampleORM\Persistence\Drivers\DriverInterface
-	*/
-	protected $connection;
-	
-	/*
-	*	Grammar for compiling the query to sql
-	*
-	*	@var \SampleORM\Persistence\Grammars\GrammarInterface
-	*/
-	protected $grammar;
-	
-	/*
-	*	Initialize the object
-	*
-	*	@param \SampleORM\Persistence\Drivers\DriverInterface $connection
-	*	@param \SampleORM\Persistence\Grammars\GrammarInterface $grammar
-	*
-	*	@return void
-	*/
-	public function __construct(DriverInterface $connection, GrammarInterface $grammar)
-	{
-		$this->connection = $connection;
-		$this->grammar = $grammar;
-	}
+
+    /*
+    *	Connection to the database
+    *
+    *	@var \SampleORM\Persistence\Drivers\DriverInterface
+    */
+    protected $connection;
+
+    /*
+    *	Grammar for compiling the query to sql
+    *
+    *	@var \SampleORM\Persistence\Grammars\GrammarInterface
+    */
+    protected $grammar;
+
+    /*
+    *	Initialize the object
+    *
+    *	@param \SampleORM\Persistence\Drivers\DriverInterface $connection
+    *	@param \SampleORM\Persistence\Grammars\GrammarInterface $grammar
+    *
+    *	@return void
+    */
+    public function __construct(DriverInterface $connection, GrammarInterface $grammar)
+    {
+        $this->connection = $connection;
+        $this->grammar = $grammar;
+    }
 
     /*
     *	Connection to the database
@@ -118,38 +118,36 @@ class Query
     */
     public function select($fields)
     {
-		// handle array
-		if (is_array($fields)) {
-			foreach ($fields as $field) {
-				if(is_string($field) || $field instanceof self) {
-					$this->fields[] = $field;
-					continue;
-				}
-				elseif($field instanceof Closure) {
-					$function = $field;
-					$this->fields[] = $this->handleClosure($function);
-					continue;
-				}
+        // handle array
+        if (is_array($fields)) {
+            foreach ($fields as $field) {
+                if (is_string($field) || $field instanceof self) {
+                    $this->fields[] = $field;
+                    continue;
+                } elseif ($field instanceof Closure) {
+                    $function = $field;
+                    $this->fields[] = $this->handleClosure($function);
+                    continue;
+                }
 
-				throw new \Exception('Expected a string, Query object or Closure');
-			}
+                throw new \Exception('Expected a string, Query object or Closure');
+            }
 
+            return $this;
+        }
+        // handle string/Query
+        elseif (is_string($fields) || $fields instanceof self) {
+            $this->fields[] = $fields;
 
-			return $this;
-		}
-		// handle string/Query
-		elseif(is_string($fields) || $fields instanceof self) {
-			$this->fields[] = $fields;
-			
-			return $this;
-		}
-		// handle Closure
-		elseif($fields instanceof Closure) {
-			$function = $fields;
-			$this->fields[] = $this->handleClosure($function);
-			
-			return $this;
-		}
+            return $this;
+        }
+        // handle Closure
+        elseif ($fields instanceof Closure) {
+            $function = $fields;
+            $this->fields[] = $this->handleClosure($function);
+
+            return $this;
+        }
 
         throw new \Exception('Expected a string, Query object, Closure, or array');
     }
@@ -202,19 +200,19 @@ class Query
 
                 return $this;
             }
-			// or a Query object
-			elseif($args[0] instanceof self) {
-				$this->where[] = $args[0];
-				
-				return $this;
-			}
-			// or a Closure
-			elseif($args[0] instanceof Closure) {
-				$function = $args[0];
-				$this->where[] = $this->handleClosure($function);
-				
-				return $this;
-			}
+            // or a Query object
+            elseif ($args[0] instanceof self) {
+                $this->where[] = $args[0];
+
+                return $this;
+            }
+            // or a Closure
+            elseif ($args[0] instanceof Closure) {
+                $function = $args[0];
+                $this->where[] = $this->handleClosure($function);
+
+                return $this;
+            }
             throw new \Exception('Expected an array');
         }
 
@@ -222,16 +220,16 @@ class Query
 
         return $this;
     }
-	
-	/*
-	*	Return a new Query object
-	*
-	*	@return \SampleORM\Persistence\Abstraction\Query
-	*/
-	protected function newQuery()
-	{
-		return new static($this->connection, $this->grammar);
-	}
+
+    /*
+    *	Return a new Query object
+    *
+    *	@return \SampleORM\Persistence\Abstraction\Query
+    */
+    protected function newQuery()
+    {
+        return new static($this->connection, $this->grammar);
+    }
 
     /*
     *	Add a join to the query
@@ -245,34 +243,34 @@ class Query
     */
     public function join($table, ...$args)
     {
-		// if the table is an array, user is setting an alias
-		if(is_array($table) || $table instanceof self) {
-			// if the first element is a closure, it's a subquery
-			if($table[0] instanceof Closure) {
-				$function = $table[0];
-				$table = [$this->handleClosure($function), $table[1]];
-			}
-			$this->joins[] = new Join($table, ...$args);
-			
-			return $this;
-		}
-		// if the table is a Closure, it's a subquery
-        elseif($table instanceof Closure) {
-			$function = $table;
-			$this->joins[] = new Join($this->handleClosure($function), ...$args);
-			
-			return $this;
-		}
-		// otherwise
-		$this->joins[] = new Join($table, ...$args);
-		
-		return $this;
+        // if the table is an array, user is setting an alias
+        if (is_array($table) || $table instanceof self) {
+            // if the first element is a closure, it's a subquery
+            if ($table[0] instanceof Closure) {
+                $function = $table[0];
+                $table = [$this->handleClosure($function), $table[1]];
+            }
+            $this->joins[] = new Join($table, ...$args);
+
+            return $this;
+        }
+        // if the table is a Closure, it's a subquery
+        elseif ($table instanceof Closure) {
+            $function = $table;
+            $this->joins[] = new Join($this->handleClosure($function), ...$args);
+
+            return $this;
+        }
+        // otherwise
+        $this->joins[] = new Join($table, ...$args);
+
+        return $this;
     }
-	
-	protected function handleClosure($closure)
-	{
-		return $closure($this->newQuery());
-	}
+
+    protected function handleClosure($closure)
+    {
+        return $closure($this->newQuery());
+    }
 
     /*
     *	Sets a limit for the query
@@ -398,7 +396,7 @@ class Query
     */
     public function whereIn($column, $values)
     {
-		return $this->inCondition($column, 'IN', $values);
+        return $this->inCondition($column, 'IN', $values);
     }
 
     /*
@@ -415,121 +413,120 @@ class Query
     {
         return $this->inCondition($column, 'NOT IN', $values);
     }
-	
-	/*
-	*	Handles IN and NOT IN conditions
-	*
-	*	@param string $column
-	*	@param string $operator
-	*	@param mixed $values
-	*
-	*	@throws \Exception
-	*
-	*	@return Query
-	*/
-	protected function inCondition($column, $operator, $values)
-	{
-        if (is_string($column)) {
-			if(is_array($values) || $values instanceof self) {
-				$this->where[] = new Condition($column, $operator, $values);
 
-				return $this;
-			}
-			elseif($values instanceof Closure) {
-				$function = $values;
-				$this->where[] = new Condition($column, $operator, $this->handleClosure($function));
-				
-				return $this;
-			}
-			
-			throw new \Exception('Expected an array, Query object, or Closure for values');
+    /*
+    *	Handles IN and NOT IN conditions
+    *
+    *	@param string $column
+    *	@param string $operator
+    *	@param mixed $values
+    *
+    *	@throws \Exception
+    *
+    *	@return Query
+    */
+    protected function inCondition($column, $operator, $values)
+    {
+        if (is_string($column)) {
+            if (is_array($values) || $values instanceof self) {
+                $this->where[] = new Condition($column, $operator, $values);
+
+                return $this;
+            } elseif ($values instanceof Closure) {
+                $function = $values;
+                $this->where[] = new Condition($column, $operator, $this->handleClosure($function));
+
+                return $this;
+            }
+
+            throw new \Exception('Expected an array, Query object, or Closure for values');
         }
 
         throw new \Exception('Expected a string for column');
-	}
-	
-	/*
-	*	Add a union to the query
-	*
-	*	@param Query|\Closure $query
-	*
-	*	@return Query
-	*/
-	public function union($query)
-	{
-		if($query instanceof Closure) {
-			$function = $query;
-			$query = $this->handleClosure($function);
-		}
-		$this->unions[] = $query;
-		
-		return $this;
-	}
-	
-	/*
-	*	Run the query as a select
-	*
-	*	@return \SampleORM\Collection\Collection
-	*/
-	public function get()
-	{
-		return $this->connection->select($this->grammar->select($this));
-	}
-	
-	/*
-	*	Run the query as an insert
-	*
-	*	@return int
-	*/
-	public function insert(array $rows)
-	{
-		foreach ($values as $key => $value) {
-			ksort($value);
-			$values[$key] = $value;
-		}
-		
-		return $this->connection->insert($this->grammar->insert($rows, $this));
-	}
-	
-	/*
-	*	Run the query as an update
-	*
-	*	@return int
-	*/
-	public function update(array $data)
-	{
-		return $this->connection->update($this->grammar->update($data, $this));
-	}
-	
-	/*
-	*	Run the query as a delete
-	*
-	*	@return int
-	*/
-	public function delete()
-	{
-		return $this->connection->delete($this->grammar->delete($this));
-	}
-	
-	/*
-	*	Run the query as a truncate
-	*
-	*	@return bool
-	*/
-	public function truncate()
-	{
-		return $this->connection->truncate($this->grammar->truncate($this));
-	}
-	
-	/*
-	*	Run a raw query
-	*
-	*	@return \SampleORM\Collection\Collection
-	*/
-	public function raw(string $sql, array $data = [])
-	{
-		return $this->connection->raw(new SqlContainer($sql, $data));
-	}
+    }
+
+    /*
+    *	Add a union to the query
+    *
+    *	@param Query|\Closure $query
+    *
+    *	@return Query
+    */
+    public function union($query)
+    {
+        if ($query instanceof Closure) {
+            $function = $query;
+            $query = $this->handleClosure($function);
+        }
+        $this->unions[] = $query;
+
+        return $this;
+    }
+
+    /*
+    *	Run the query as a select
+    *
+    *	@return \SampleORM\Collection\Collection
+    */
+    public function get()
+    {
+        return $this->connection->select($this->grammar->select($this));
+    }
+
+    /*
+    *	Run the query as an insert
+    *
+    *	@return int
+    */
+    public function insert(array $rows)
+    {
+        foreach ($values as $key => $value) {
+            ksort($value);
+            $values[$key] = $value;
+        }
+
+        return $this->connection->insert($this->grammar->insert($rows, $this));
+    }
+
+    /*
+    *	Run the query as an update
+    *
+    *	@return int
+    */
+    public function update(array $data)
+    {
+        return $this->connection->update($this->grammar->update($data, $this));
+    }
+
+    /*
+    *	Run the query as a delete
+    *
+    *	@return int
+    */
+    public function delete()
+    {
+        return $this->connection->delete($this->grammar->delete($this));
+    }
+
+    /*
+    *	Run the query as a truncate
+    *
+    *	@return bool
+    */
+    public function truncate()
+    {
+        return $this->connection->truncate($this->grammar->truncate($this));
+    }
+
+    /*
+    *	Run a raw query
+    *
+    *	@return \SampleORM\Collection\Collection
+    */
+    public function raw(string $sql, array $data = [])
+    {
+        return $this->connection->raw(new SqlContainer($sql, $data));
+    }
 
     /*
     *	Add a union to the query
@@ -628,14 +625,14 @@ class Query
     {
         return $this->limit;
     }
-	
-	/*
-	*	Returns the set unions for the query
-	*
-	*	@return array
-	*/
-	public function getUnions()
-	{
-		return $this->unions;
-	}
+
+    /*
+    *	Returns the set unions for the query
+    *
+    *	@return array
+    */
+    public function getUnions()
+    {
+        return $this->unions;
+    }
 }
