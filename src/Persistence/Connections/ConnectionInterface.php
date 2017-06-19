@@ -18,56 +18,52 @@ interface ConnectionInterface
     /*
     *	Run a select query against the database
     *
-    *	@param string $sql
-    *	@param array $data
+    *	@param SampleORM\Persistence\SqlContainer $sql
     *
     *	@return SampleORM\Collection\Collection
     */
-    public function select(string $sql, array $data);
+    public function select(SqlContainer $sql);
 
     /*
     *	Run an insert query against the database
     *
-    *	@param string $sql
-    *	@param array $data
+    *	@param SampleORM\Persistence\SqlContainer $sql
     *
     *	@return int
     */
-    public function insert(string $sql, array $data);
+    public function insert(SqlContainer $sql);
 
     /*
-    *	Run a select query against the database
+    *	Run an update query against the database
     *
-    *	@param string $sql
-    *	@param array $data
+    *	@param SampleORM\Persistence\SqlContainer $sql
     *
     *	@return int
     */
-    public function update(string $sql, array $data);
+    public function update(SqlContainer $sql);
 
     /*
     *	Run a delete query against the database
     *
-    *	@param string $sql
-    *	@param array $data
+    *	@param SampleORM\Persistence\SqlContainer $sql
     *
     *	@return int
     */
-    public function delete(string $sql, array $data);
+    public function delete(SqlContainer $sql);
 
     /*
     *	Run a truncate query against the database
     *
-    *	@param string $sql
+    *	@param SampleORM\Persistence\SqlContainer $sql
     *
     *	@return bool
     */
-    public function truncate(string $sql);
+    public function truncate(SqlContainer $sql);
 
     /*
     *	Run a raw query against the database
     *
-    *	@param string $sql
+    *	@param SampleORM\Persistence\SqlContainer $sql
     *
     *	@return SampleORM\Collection\Collection
     */
