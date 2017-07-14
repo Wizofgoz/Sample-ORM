@@ -1,9 +1,9 @@
 <?php
 
-namespace SampleORM\Persistence\Abstraction;
+namespace SampleORM\Persistence;
 
 use Closure;
-use SampleORM\Persistence\Drivers\DriverInterface;
+use SampleORM\Persistence\Connections\ConnectionInterface;
 use SampleORM\Persistence\Grammars\GrammarInterface;
 use SampleORM\Persistence\SqlContainer;
 
@@ -75,7 +75,7 @@ class Query
     /*
     *	Connection to the database
     *
-    *	@var \SampleORM\Persistence\Drivers\DriverInterface
+    *	@var \SampleORM\Persistence\Connections\ConnectionInterface
     */
     protected $connection;
 
@@ -89,12 +89,12 @@ class Query
     /*
     *	Initialize the object
     *
-    *	@param \SampleORM\Persistence\Drivers\DriverInterface $connection
+    *	@param \SampleORM\Persistence\Connections\ConnectionInterface $connection
     *	@param \SampleORM\Persistence\Grammars\GrammarInterface $grammar
     *
     *	@return void
     */
-    public function __construct(DriverInterface $connection, GrammarInterface $grammar)
+    public function __construct(ConnectionInterface $connection, GrammarInterface $grammar)
     {
         $this->connection = $connection;
         $this->grammar = $grammar;
@@ -103,7 +103,7 @@ class Query
     /*
     *	Connection to the database
     *
-    *	@var \SampleORM\Persistence\Drivers\DriverInterface
+    *	@var \SampleORM\Persistence\Connections\ConnectionInterface
     */
     protected $connection;
 
@@ -466,7 +466,7 @@ class Query
     /*
     *	Run the query as a select
     *
-    *	@return \SampleORM\Collection\Collection
+    *	@return \SampleORM\Helpers\Collection
     */
     public function get()
     {
@@ -529,7 +529,7 @@ class Query
     }
 
     /*
-    *	Add a union to the query
+    *	Add a union to the query (not finished yet)
     *
     *	@param Query|\Closure $query
     *

@@ -20,7 +20,7 @@ interface ConnectionInterface
     *
     *	@param SampleORM\Persistence\SqlContainer $sql
     *
-    *	@return SampleORM\Collection\Collection
+    *	@return SampleORM\Helpers\Collection
     */
     public function select(SqlContainer $sql);
 
@@ -65,7 +65,7 @@ interface ConnectionInterface
     *
     *	@param SampleORM\Persistence\SqlContainer $sql
     *
-    *	@return SampleORM\Collection\Collection
+    *	@return SampleORM\Helpers\Collection
     */
     public function raw(string $sql);
 }

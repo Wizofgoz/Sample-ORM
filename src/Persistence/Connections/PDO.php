@@ -5,7 +5,7 @@ namespace SampleORM\Persistence\Connections;
 use PDO as BasePDO;
 use SampleORM\Config\ConfigManager;
 use SampleORM\Persistence\SqlContainer as SQL;
-use SampleORM\Collection\Collection;
+use SampleORM\Helpers\Collection;
 
 class PDO extends BasePDO implements ConnectionInterface
 {
@@ -19,7 +19,7 @@ class PDO extends BasePDO implements ConnectionInterface
     *
     *	@param SampleORM\Persistence\SqlContainer $sql
     *
-    *	@return SampleORM\Collection\Collection
+    *	@return SampleORM\Helpers\Collection
     */
 	public function select(SQL $sql)
 	{
@@ -82,7 +82,7 @@ class PDO extends BasePDO implements ConnectionInterface
     *
     *	@param SampleORM\Persistence\SqlContainer $sql
     *
-    *	@return SampleORM\Collection\Collection
+    *	@return SampleORM\Helpers\Collection
     */
 	public function raw(SQL $sql)
 	{
@@ -109,7 +109,7 @@ class PDO extends BasePDO implements ConnectionInterface
 	*
 	*	@param SampleORM\Persistence\SqlContainer $sql
 	*
-	*	@return SampleORM\Collection\Collection
+	*	@return SampleORM\Helpers\Collection
 	*/
 	protected function returnCollection(SQL $sql)
 	{

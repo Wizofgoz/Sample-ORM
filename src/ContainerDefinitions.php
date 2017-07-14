@@ -9,20 +9,15 @@ return [
         \SampleORM\Config\ConfigManager::class,
     ],
 
-    \SampleORM\Persistance\Abstraction\Grammars\GrammarFactory::class => [
+    \SampleORM\Persistance\Grammars\GrammarFactory::class => [
         'static' => 'factory',
         \SampleORM\Config\ConfigManager::class,
     ],
 
-    //	PDO driver for use with query builder
-    \SampleORM\Persistance\Abstraction\Drivers\PDO::class => [
-        \SampleORM\Persistance\PDO::class,
-    ],
-
     //	Query Builder for database abstraction
-    \SampleORM\Persistance\Abstraction\Query::class => [
-        \SampleORM\Persistance\Abstraction\Drivers\PDO::class,
-        \SampleORM\Persistance\Abstraction\Grammars\GrammarFactory::class,
+    \SampleORM\Persistance\Query::class => [
+        \SampleORM\Persistance\Connections\PDO::class,
+        \SampleORM\Persistance\Grammars\GrammarFactory::class,
     ],
 
     //	Collection

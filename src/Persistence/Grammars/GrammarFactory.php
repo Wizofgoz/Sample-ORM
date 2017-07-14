@@ -1,6 +1,6 @@
 <?php
 
-namespace SampleORM\Persistence\Abstraction\Grammars;
+namespace SampleORM\Persistence\Grammars;
 
 use SampleORM\Config\ConfigManager;
 
@@ -9,7 +9,7 @@ class GrammarFactory
     /*
     *	Create a new grammar according to the set configuration
     *
-    *	@return \SampleORM\Persistence\Abstraction\Grammars\GrammarInterface
+    *	@return \SampleORM\Persistence\Grammars\GrammarInterface
     */
     public static function factory(ConfigManager $config)
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace ORM\Collection;
+namespace SampleORM\Helpers;
 
 use ArrayAccess;
 use Closure;

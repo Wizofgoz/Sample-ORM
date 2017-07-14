@@ -40,12 +40,10 @@ class SampleORM
         switch (strtolower($name)) {
             case 'config':
                 $class = \SampleORM\Config\ConfigManager::class;
-            case 'persistence':
-                $class = \SampleORM\Persistence\Query::class;
             case 'query':
-                $class = \SampleORM\Persistence\Abstraction\Query::class;
+                $class = \SampleORM\Persistence\Query::class;
             case 'collection':
-                $class = \SampleORM\Collection\Collection::class;
+                $class = \SampleORM\Helpers\Collection::class;
             case 'mapper':
                 $class = \SampleORM\ModelMapper::class;
             default:

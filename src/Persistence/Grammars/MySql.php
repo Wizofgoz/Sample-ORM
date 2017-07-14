@@ -1,9 +1,9 @@
 <?php
 
-namespace SampleORM\Persistence\Abstraction\Grammars;
+namespace SampleORM\Persistence\Grammars;
 
-use SampleORM\Persistence\Abstraction\Components\Condition;
-use SampleORM\Persistence\Abstraction\Query;
+use SampleORM\Persistence\Components\Condition;
+use SampleORM\Persistence\Query;
 use SampleORM\Persistence\SqlContainer;
 
 class MySql implements GrammarInterface
@@ -18,7 +18,7 @@ class MySql implements GrammarInterface
     /*
     *	build query portion concerning table joins
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return string
     */
@@ -45,7 +45,7 @@ class MySql implements GrammarInterface
     /*
     *	Resolve a condition into it's SQL equivalent
     *
-    *	@param SampleORM\Persistence\Abstraction\Components\Condition $condition
+    *	@param SampleORM\Persistence\Components\Condition $condition
     *
     *	@return mixed
     */
@@ -70,7 +70,7 @@ class MySql implements GrammarInterface
     /*
     *	build query portion concerning where clauses
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return array
     */
@@ -92,7 +92,7 @@ class MySql implements GrammarInterface
     /*
     *	build query portion concerning requested fields
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return string
     */
@@ -129,7 +129,7 @@ class MySql implements GrammarInterface
     /*
     *	build query portion concerning order by clause
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return string
     */
@@ -151,7 +151,7 @@ class MySql implements GrammarInterface
     /*
     *	build query portion concerning group by clause
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return string
     */
@@ -173,7 +173,7 @@ class MySql implements GrammarInterface
     /*
     *	build query portion concerning having clauses
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return array
     */
@@ -195,7 +195,7 @@ class MySql implements GrammarInterface
     /*
     *	build query portion concerning limit clause
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return string
     */
@@ -213,7 +213,7 @@ class MySql implements GrammarInterface
     /*
     *	Run the built query against the DB connection as a select
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@throws \Exception
     *
@@ -236,7 +236,7 @@ class MySql implements GrammarInterface
     *	Insert the given rows
     *
     *	@param array $rows
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@throws \Exception
     *
@@ -295,7 +295,7 @@ class MySql implements GrammarInterface
     *	Update with the given data
     *
     *	@param array $columns
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@throws \Exception
     *
@@ -324,7 +324,7 @@ class MySql implements GrammarInterface
     /*
     *	Delete the given rows
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@throws \Exception
     *
@@ -346,7 +346,7 @@ class MySql implements GrammarInterface
     /*
     *	Truncate the given table
     *
-    *	@param Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@throws \Exception
     *

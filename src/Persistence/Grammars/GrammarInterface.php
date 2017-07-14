@@ -1,15 +1,15 @@
 <?php
 
-namespace SampleORM\Persistence\Abstraction\Grammars;
+namespace SampleORM\Persistence\Grammars;
 
-use SampleORM\Persistence\Abstraction\Query;
+use SampleORM\Persistence\Query;
 
 interface GrammarInterface
 {
     /*
     *	Compile a select query
     *
-    *	@param SampleORM\Persistence\Abstraction\Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return array
     */
@@ -19,7 +19,7 @@ interface GrammarInterface
     *	Compile an insert query
     *
     *	@param array $rows
-    *	@param SampleORM\Persistence\Abstraction\Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return array
     */
@@ -29,7 +29,7 @@ interface GrammarInterface
     *	Compile an update query
     *
     *	@param array $columns
-    *	@param SampleORM\Persistence\Abstraction\Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return array
     */
@@ -38,7 +38,7 @@ interface GrammarInterface
     /*
     *	Compile a delete query
     *
-    *	@param SampleORM\Persistence\Abstraction\Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return array
     */
@@ -47,7 +47,7 @@ interface GrammarInterface
     /*
     *	Compile a truncate query
     *
-    *	@param SampleORM\Persistence\Abstraction\Query $query
+    *	@param SampleORM\Persistence\Query $query
     *
     *	@return array
     */

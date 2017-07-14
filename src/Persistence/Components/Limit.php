@@ -1,6 +1,6 @@
 <?php
 
-namespace SampleORM\Persistence\Abstraction\Components;
+namespace SampleORM\Persistence\Components;
 
 class Limit
 {
