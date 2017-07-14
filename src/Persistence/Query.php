@@ -5,7 +5,6 @@ namespace SampleORM\Persistence;
 use Closure;
 use SampleORM\Persistence\Connections\ConnectionInterface;
 use SampleORM\Persistence\Grammars\GrammarInterface;
-use SampleORM\Persistence\SqlContainer;
 
 class Query
 {
